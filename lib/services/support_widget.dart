@@ -18,19 +18,7 @@ class InfoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withValues(alpha: 0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
+    return CustomContainer(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -38,10 +26,7 @@ class InfoCard extends StatelessWidget {
             children: [
               Icon(icon, color: iconColor, size: 28),
               const SizedBox(width: 8),
-              Text(
-                title,
-                style: const TextStyle(fontSize: 14, color: Colors.grey),
-              ),
+              Text(title, style: const TextStyle(fontSize: 14, color: Colors.grey)),
             ],
           ),
           const SizedBox(height: 12),
@@ -50,10 +35,7 @@ class InfoCard extends StatelessWidget {
             style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 4),
-          Text(
-            subtitle,
-            style: const TextStyle(fontSize: 12, color: Colors.grey),
-          ),
+          Text(subtitle, style: const TextStyle(fontSize: 12, color: Colors.grey)),
         ],
       ),
     );
@@ -96,11 +78,7 @@ class CategoryCard extends StatelessWidget {
           const SizedBox(height: 12),
           Text(
             title,
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: color,
-            ),
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: color),
           ),
           const SizedBox(height: 4),
           Text(
@@ -117,12 +95,14 @@ class WorkoutCard extends StatelessWidget {
   final String title;
   final String details;
   final String time;
+  final IconData icon;
 
   const WorkoutCard({
     super.key,
     required this.title,
     required this.details,
     required this.time,
+    this.icon = Icons.fitness_center,
   });
 
   @override
@@ -149,7 +129,7 @@ class WorkoutCard extends StatelessWidget {
               color: Colors.deepPurple.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: const Icon(Icons.fitness_center, color: Colors.deepPurple),
+            child: Icon(icon, color: Colors.deepPurple),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -158,10 +138,7 @@ class WorkoutCard extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 4),
                 Text(
@@ -188,6 +165,59 @@ class WorkoutCard extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class CustomContainer extends StatelessWidget {
+  final Widget child;
+  final EdgeInsetsGeometry? padding;
+
+  const CustomContainer({
+    super.key,
+    required this.child,
+    this.padding,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: padding ?? const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withValues(alpha: 0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: child,
+    );
+  }
+}
+
+class CustomText extends StatelessWidget {
+  final String text;
+  final double fontSize;
+  final FontWeight fontWeight;
+  final Color color;
+
+  const CustomText({
+    super.key,
+    required this.text,
+    this.fontSize = 14,
+    this.fontWeight = FontWeight.normal,
+    this.color = Colors.black,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      text,
+      style: TextStyle(fontSize: fontSize, fontWeight: fontWeight, color: color),
     );
   }
 }
