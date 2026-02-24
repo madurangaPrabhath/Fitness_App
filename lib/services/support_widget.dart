@@ -52,48 +52,69 @@ class CategoryCard extends StatelessWidget {
   final String title;
   final String subtitle;
   final Color color;
+  final String? image;
 
   const CategoryCard({
     super.key,
     required this.title,
     required this.subtitle,
     required this.color,
+    this.image,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
       width: 160,
-      padding: const EdgeInsets.all(16),
+      clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.3),
-              borderRadius: BorderRadius.circular(8),
+          if (image != null)
+            SizedBox(
+              height: 80,
+              width: double.infinity,
+              child: Image.asset(image!, fit: BoxFit.cover),
+            )
+          else
+            Padding(
+              padding: const EdgeInsets.only(left: 16, top: 16),
+              child: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.3),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(Icons.fitness_center, color: color, size: 24),
+              ),
             ),
-            child: Icon(Icons.fitness_center, color: color, size: 24),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            title,
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: color,
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: color,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  subtitle,
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: color.withValues(alpha: 0.8),
+                  ),
+                ),
+              ],
             ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            subtitle,
-            style: TextStyle(fontSize: 12, color: color.withValues(alpha: 0.8)),
           ),
         ],
       ),
@@ -106,6 +127,7 @@ class WorkoutCard extends StatelessWidget {
   final String details;
   final String time;
   final IconData icon;
+  final String? image;
 
   const WorkoutCard({
     super.key,
@@ -113,6 +135,7 @@ class WorkoutCard extends StatelessWidget {
     required this.details,
     required this.time,
     this.icon = Icons.fitness_center,
+    this.image,
   });
 
   @override
@@ -133,14 +156,25 @@ class WorkoutCard extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Colors.deepPurple.withValues(alpha: 0.1),
+          if (image != null)
+            ClipRRect(
               borderRadius: BorderRadius.circular(12),
+              child: Image.asset(
+                image!,
+                width: 50,
+                height: 50,
+                fit: BoxFit.cover,
+              ),
+            )
+          else
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.deepPurple.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(icon, color: Colors.deepPurple),
             ),
-            child: Icon(icon, color: Colors.deepPurple),
-          ),
           const SizedBox(width: 16),
           Expanded(
             child: Column(

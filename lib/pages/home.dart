@@ -19,7 +19,6 @@ class HomePage extends StatelessWidget {
               children: [
                 const SizedBox(height: 20),
 
-                // --- Greeting Header ---
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -42,7 +41,6 @@ class HomePage extends StatelessWidget {
                     ),
                     Row(
                       children: [
-                        // Dark / Light toggle button
                         GestureDetector(
                           onTap: () => themeProvider.toggleTheme(),
                           child: Container(
@@ -80,6 +78,60 @@ class HomePage extends StatelessWidget {
                 ),
 
                 const SizedBox(height: 25),
+
+                Container(
+                  width: double.infinity,
+                  height: 160,
+                  clipBehavior: Clip.antiAlias,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      Image.asset('images/girl.jpg', fit: BoxFit.cover),
+                      Container(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              Colors.black.withValues(alpha: 0.5),
+                              Colors.transparent,
+                            ],
+                            begin: Alignment.bottomCenter,
+                            end: Alignment.topCenter,
+                          ),
+                        ),
+                      ),
+                      const Positioned(
+                        bottom: 16,
+                        left: 16,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Stay Consistent!',
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                            SizedBox(height: 4),
+                            Text(
+                              'Your body achieves what your mind believes',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.white70,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 20),
 
                 const Row(
                   children: [
@@ -133,18 +185,21 @@ class HomePage extends StatelessWidget {
                         title: 'Cardio',
                         subtitle: '6 Exercises\n100 Minutes',
                         color: Colors.orange,
+                        image: 'images/fit1.png',
                       ),
                       const SizedBox(width: 15),
                       CategoryCard(
                         title: 'Arm',
                         subtitle: '6 Exercises\n100 Minutes',
                         color: Colors.teal,
+                        image: 'images/fit2.png',
                       ),
                       const SizedBox(width: 15),
                       CategoryCard(
                         title: 'Legs',
                         subtitle: '8 Exercises\n120 Minutes',
                         color: Colors.blue,
+                        image: 'images/fit3.png',
                       ),
                     ],
                   ),
@@ -163,17 +218,19 @@ class HomePage extends StatelessWidget {
                   title: 'Squats',
                   details: '2 sets | 10 Repetition',
                   time: '10:00',
+                  image: 'images/squat.png',
                 ),
                 const WorkoutCard(
                   title: 'Push Ups',
                   details: '3 sets | 15 Repetition',
                   time: '08:00',
+                  image: 'images/pushup.png',
                 ),
                 const WorkoutCard(
                   title: 'Lunges',
                   details: '3 sets | 12 Repetition',
                   time: '12:00',
-                  icon: Icons.directions_walk,
+                  image: 'images/running.png',
                 ),
 
                 const SizedBox(height: 20),
