@@ -1,28 +1,25 @@
 import 'package:flutter/material.dart';
-import 'package:fitness_app/pages/signin.dart';
+import 'package:fitness_app/pages/signup.dart';
+import 'package:fitness_app/pages/bottomnav.dart';
 
-class SignUpPage extends StatefulWidget {
-  const SignUpPage({super.key});
+class SignInPage extends StatefulWidget {
+  const SignInPage({super.key});
 
   @override
-  State<SignUpPage> createState() => _SignUpPageState();
+  State<SignInPage> createState() => _SignInPageState();
 }
 
-class _SignUpPageState extends State<SignUpPage> {
+class _SignInPageState extends State<SignInPage> {
   final _formKey = GlobalKey<FormState>();
-  final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  final _confirmPasswordController = TextEditingController();
   bool _obscurePassword = true;
-  bool _obscureConfirm = true;
+  bool _rememberMe = false;
 
   @override
   void dispose() {
-    _nameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
-    _confirmPasswordController.dispose();
     super.dispose();
   }
 
@@ -37,29 +34,50 @@ class _SignUpPageState extends State<SignUpPage> {
             Stack(
               children: [
                 SizedBox(
-                  height: 260,
+                  height: 280,
                   width: double.infinity,
                   child: Image.asset(
-                    'images/calfstretch.jpeg',
+                    'images/shoulder-stretch.jpg',
                     fit: BoxFit.cover,
                   ),
                 ),
-                Positioned(
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  child: Container(
-                    height: 80,
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          Theme.of(context).scaffoldBackgroundColor,
-                          Colors.transparent,
-                        ],
-                        begin: Alignment.bottomCenter,
-                        end: Alignment.topCenter,
-                      ),
+                Container(
+                  height: 280,
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        Colors.black.withValues(alpha: 0.5),
+                        Colors.transparent,
+                        Theme.of(context).scaffoldBackgroundColor,
+                      ],
+                      stops: const [0.0, 0.5, 1.0],
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
                     ),
+                  ),
+                ),
+                const Positioned(
+                  top: 60,
+                  left: 24,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Welcome\nBack!',
+                        style: TextStyle(
+                          fontSize: 34,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                          height: 1.2,
+                        ),
+                      ),
+                      SizedBox(height: 8),
+                      Text(
+                        'Sign in to keep pushing your limits',
+                        style: TextStyle(fontSize: 14, color: Colors.white70),
+                      ),
+                    ],
                   ),
                 ),
               ],
@@ -72,47 +90,19 @@ class _SignUpPageState extends State<SignUpPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Create Account',
-                      style: TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      'Start your fitness journey today',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey.shade500,
-                      ),
-                    ),
-
-                    const SizedBox(height: 28),
-
-                    _buildTextField(
-                      controller: _nameController,
-                      label: 'Full Name',
-                      hint: 'John Doe',
-                      icon: Icons.person_outline,
-                      isDark: isDark,
-                      validator: (v) => v == null || v.trim().isEmpty
-                          ? 'Enter your name'
-                          : null,
-                    ),
-
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 8),
 
                     _buildTextField(
                       controller: _emailController,
-                      label: 'Email',
+                      label: 'Email Address',
                       hint: 'you@example.com',
                       icon: Icons.email_outlined,
                       isDark: isDark,
                       keyboardType: TextInputType.emailAddress,
                       validator: (v) {
-                        if (v == null || v.trim().isEmpty)
+                        if (v == null || v.trim().isEmpty) {
                           return 'Enter your email';
+                        }
                         if (!RegExp(
                           r'^[\w\-.]+@([\w-]+\.)+[\w-]{2,4}$',
                         ).hasMatch(v.trim())) {
@@ -143,49 +133,76 @@ class _SignUpPageState extends State<SignUpPage> {
                         ),
                       ),
                       validator: (v) {
-                        if (v == null || v.isEmpty) return 'Enter a password';
-                        if (v.length < 6) return 'At least 6 characters';
-                        return null;
-                      },
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    _buildTextField(
-                      controller: _confirmPasswordController,
-                      label: 'Confirm Password',
-                      hint: '••••••••',
-                      icon: Icons.lock_outline,
-                      isDark: isDark,
-                      obscure: _obscureConfirm,
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          _obscureConfirm
-                              ? Icons.visibility_off_outlined
-                              : Icons.visibility_outlined,
-                          color: Colors.grey,
-                        ),
-                        onPressed: () =>
-                            setState(() => _obscureConfirm = !_obscureConfirm),
-                      ),
-                      validator: (v) {
                         if (v == null || v.isEmpty)
-                          return 'Confirm your password';
-                        if (v != _passwordController.text) {
-                          return 'Passwords do not match';
-                        }
+                          return 'Enter your password';
                         return null;
                       },
                     ),
 
-                    const SizedBox(height: 28),
+                    const SizedBox(height: 8),
+
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            SizedBox(
+                              height: 24,
+                              width: 24,
+                              child: Checkbox(
+                                value: _rememberMe,
+                                activeColor: Colors.deepPurple,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                onChanged: (v) =>
+                                    setState(() => _rememberMe = v ?? false),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Remember me',
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: Colors.grey.shade600,
+                              ),
+                            ),
+                          ],
+                        ),
+                        TextButton(
+                          onPressed: () {},
+                          style: TextButton.styleFrom(
+                            padding: EdgeInsets.zero,
+                            minimumSize: Size.zero,
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          ),
+                          child: const Text(
+                            'Forgot Password?',
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: Colors.deepPurple,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 24),
 
                     SizedBox(
                       width: double.infinity,
                       height: 52,
                       child: ElevatedButton(
                         onPressed: () {
-                          if (_formKey.currentState!.validate()) {}
+                          if (_formKey.currentState!.validate()) {
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const BottomNav(),
+                              ),
+                            );
+                          }
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.deepPurple,
@@ -196,7 +213,7 @@ class _SignUpPageState extends State<SignUpPage> {
                           elevation: 2,
                         ),
                         child: const Text(
-                          'Sign Up',
+                          'Sign In',
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
@@ -205,7 +222,7 @@ class _SignUpPageState extends State<SignUpPage> {
                       ),
                     ),
 
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 22),
 
                     Row(
                       children: [
@@ -213,7 +230,7 @@ class _SignUpPageState extends State<SignUpPage> {
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 12),
                           child: Text(
-                            'or sign up with',
+                            'or continue with',
                             style: TextStyle(
                               fontSize: 13,
                               color: Colors.grey.shade500,
@@ -224,7 +241,7 @@ class _SignUpPageState extends State<SignUpPage> {
                       ],
                     ),
 
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 18),
 
                     Row(
                       children: [
@@ -243,16 +260,24 @@ class _SignUpPageState extends State<SignUpPage> {
                             isDark: isDark,
                           ),
                         ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: _socialButton(
+                            icon: Icons.facebook,
+                            label: 'Facebook',
+                            isDark: isDark,
+                          ),
+                        ),
                       ],
                     ),
 
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 28),
 
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          'Already have an account? ',
+                          "Don't have an account? ",
                           style: TextStyle(
                             fontSize: 14,
                             color: Colors.grey.shade600,
@@ -263,12 +288,12 @@ class _SignUpPageState extends State<SignUpPage> {
                             Navigator.pushReplacement(
                               context,
                               MaterialPageRoute(
-                                builder: (_) => const SignInPage(),
+                                builder: (_) => const SignUpPage(),
                               ),
                             );
                           },
                           child: const Text(
-                            'Sign In',
+                            'Sign Up',
                             style: TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.bold,
@@ -342,15 +367,20 @@ class _SignUpPageState extends State<SignUpPage> {
     required String label,
     required bool isDark,
   }) {
-    return OutlinedButton.icon(
+    return OutlinedButton(
       onPressed: () {},
-      icon: Icon(icon, size: 22),
-      label: Text(label),
       style: OutlinedButton.styleFrom(
         foregroundColor: isDark ? Colors.white70 : Colors.black87,
         side: BorderSide(color: Colors.grey.shade300),
         padding: const EdgeInsets.symmetric(vertical: 14),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+      ),
+      child: Column(
+        children: [
+          Icon(icon, size: 22),
+          const SizedBox(height: 4),
+          Text(label, style: const TextStyle(fontSize: 11)),
+        ],
       ),
     );
   }
