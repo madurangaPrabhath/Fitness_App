@@ -71,18 +71,33 @@ class CategoryCard extends StatelessWidget {
         color: color.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(16),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Stack(
+        fit: StackFit.expand,
         children: [
+          // ── Full image background ──
           if (image != null)
-            SizedBox(
-              height: 80,
+            Image.asset(
+              image!,
+              fit: BoxFit.contain,
               width: double.infinity,
-              child: Image.asset(image!, fit: BoxFit.cover),
-            )
-          else
-            Padding(
-              padding: const EdgeInsets.only(left: 16, top: 16),
+              height: double.infinity,
+            ),
+          // ── Gradient overlay for text readability ──
+          if (image != null)
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [color.withValues(alpha: 0.85), Colors.transparent],
+                  begin: Alignment.bottomCenter,
+                  end: Alignment.center,
+                ),
+              ),
+            ),
+          // ── Fallback icon when no image ──
+          if (image == null)
+            Positioned(
+              top: 16,
+              left: 16,
               child: Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
@@ -92,8 +107,11 @@ class CategoryCard extends StatelessWidget {
                 child: Icon(Icons.fitness_center, color: color, size: 24),
               ),
             ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          // ── Text at bottom ──
+          Positioned(
+            left: 12,
+            right: 12,
+            bottom: 10,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -102,16 +120,22 @@ class CategoryCard extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    color: color,
+                    color: image != null ? Colors.white : color,
                   ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 2),
                 Text(
                   subtitle,
                   style: TextStyle(
                     fontSize: 11,
-                    color: color.withValues(alpha: 0.8),
+                    color: image != null
+                        ? Colors.white70
+                        : color.withValues(alpha: 0.8),
                   ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
@@ -127,7 +151,7 @@ class WorkoutCard extends StatelessWidget {
   final String details;
   final String time;
   final IconData icon;
-  final String? image;
+  final Color iconColor;
 
   const WorkoutCard({
     super.key,
@@ -135,7 +159,7 @@ class WorkoutCard extends StatelessWidget {
     required this.details,
     required this.time,
     this.icon = Icons.fitness_center,
-    this.image,
+    this.iconColor = Colors.deepPurple,
   });
 
   @override
@@ -156,25 +180,14 @@ class WorkoutCard extends StatelessWidget {
       ),
       child: Row(
         children: [
-          if (image != null)
-            ClipRRect(
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: iconColor.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(12),
-              child: Image.asset(
-                image!,
-                width: 50,
-                height: 50,
-                fit: BoxFit.cover,
-              ),
-            )
-          else
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.deepPurple.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(icon, color: Colors.deepPurple),
             ),
+            child: Icon(icon, color: iconColor),
+          ),
           const SizedBox(width: 16),
           Expanded(
             child: Column(

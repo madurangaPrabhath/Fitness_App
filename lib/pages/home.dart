@@ -177,7 +177,7 @@ class HomePage extends StatelessWidget {
                 const SizedBox(height: 15),
 
                 SizedBox(
-                  height: 160,
+                  height: 200,
                   child: ListView(
                     scrollDirection: Axis.horizontal,
                     children: [
@@ -218,19 +218,22 @@ class HomePage extends StatelessWidget {
                   title: 'Squats',
                   details: '2 sets | 10 Repetition',
                   time: '10:00',
-                  image: 'images/squat.png',
+                  icon: Icons.fitness_center,
+                  iconColor: Color(0xFF7C4DFF),
                 ),
                 const WorkoutCard(
                   title: 'Push Ups',
                   details: '3 sets | 15 Repetition',
                   time: '08:00',
-                  image: 'images/pushup.png',
+                  icon: Icons.sports_gymnastics,
+                  iconColor: Color(0xFFFF6D00),
                 ),
                 const WorkoutCard(
                   title: 'Lunges',
                   details: '3 sets | 12 Repetition',
                   time: '12:00',
-                  image: 'images/running.png',
+                  icon: Icons.directions_walk,
+                  iconColor: Color(0xFF00BFA5),
                 ),
 
                 const SizedBox(height: 20),
