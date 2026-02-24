@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:fitness_app/services/support_widget.dart';
+import 'package:fitness_app/services/theme_provider.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
     return Scaffold(
-      backgroundColor: const Color(0xfff5f6fa),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -21,7 +23,7 @@ class HomePage extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Column(
+                    Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
@@ -38,10 +40,41 @@ class HomePage extends StatelessWidget {
                         ),
                       ],
                     ),
-                    CircleAvatar(
-                      radius: 25,
-                      backgroundColor: Colors.deepPurple.withValues(alpha: 0.15),
-                      child: const Icon(Icons.person, color: Colors.deepPurple, size: 28),
+                    Row(
+                      children: [
+                        // Dark / Light toggle button
+                        GestureDetector(
+                          onTap: () => themeProvider.toggleTheme(),
+                          child: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.primaryContainer,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Icon(
+                              themeProvider.isDarkMode
+                                  ? Icons.light_mode
+                                  : Icons.dark_mode,
+                              color: Theme.of(context).colorScheme.primary,
+                              size: 24,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        CircleAvatar(
+                          radius: 25,
+                          backgroundColor: Colors.deepPurple.withValues(
+                            alpha: 0.15,
+                          ),
+                          child: const Icon(
+                            Icons.person,
+                            color: Colors.deepPurple,
+                            size: 28,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),

@@ -17,11 +17,12 @@ class _BottomNavState extends State<BottomNav> {
 
   @override
   Widget build(BuildContext context) {
+    final navTheme = Theme.of(context).bottomNavigationBarTheme;
     return Scaffold(
       body: _pages[_currentIndex],
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: navTheme.backgroundColor,
           boxShadow: [
             BoxShadow(
               color: Colors.grey.withValues(alpha: 0.15),
@@ -34,9 +35,9 @@ class _BottomNavState extends State<BottomNav> {
           currentIndex: _currentIndex,
           onTap: (index) => setState(() => _currentIndex = index),
           elevation: 0,
-          backgroundColor: Colors.white,
-          selectedItemColor: Colors.deepPurple,
-          unselectedItemColor: Colors.grey,
+          backgroundColor: navTheme.backgroundColor,
+          selectedItemColor: navTheme.selectedItemColor,
+          unselectedItemColor: navTheme.unselectedItemColor,
           showSelectedLabels: true,
           showUnselectedLabels: true,
           type: BottomNavigationBarType.fixed,
