@@ -117,7 +117,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
     });
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('\"${item.title}\" dismissed'),
+        content: Text('"${item.title}" dismissed'),
         backgroundColor: Colors.deepPurple,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),

@@ -227,15 +227,13 @@ class _HelpSupportPageState extends State<HelpSupportPage> {
               if (_filteredFaqs.isEmpty)
                 _buildEmptySearch(isDark)
               else
-                ..._filteredFaqs
-                    .map((faq) => _buildFaqTile(faq, isDark))
-                    .toList(),
+                ..._filteredFaqs.map((faq) => _buildFaqTile(faq, isDark)),
             ] else ...[
               _sectionHeader('Frequently Asked Questions'),
               const SizedBox(height: 10),
-              ..._faqCategories
-                  .map((cat) => _buildCategorySection(cat, isDark))
-                  .toList(),
+              ..._faqCategories.map(
+                (cat) => _buildCategorySection(cat, isDark),
+              ),
             ],
 
             const SizedBox(height: 28),

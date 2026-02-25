@@ -1,17 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:fitness_app/services/theme_provider.dart';
 import 'package:fitness_app/pages/editprofile.dart';
 import 'package:fitness_app/pages/notifications.dart';
 import 'package:fitness_app/pages/settings.dart';
 import 'package:fitness_app/pages/helpsupport.dart';
+import 'package:fitness_app/pages/about.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final themeProvider = Provider.of<ThemeProvider>(context);
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
@@ -19,29 +17,6 @@ class ProfilePage extends StatelessWidget {
           child: Column(
             children: [
               const SizedBox(height: 20),
-
-              Align(
-                alignment: Alignment.centerRight,
-                child: GestureDetector(
-                  onTap: () => themeProvider.toggleTheme(),
-                  child: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.primaryContainer,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Icon(
-                      themeProvider.isDarkMode
-                          ? Icons.light_mode
-                          : Icons.dark_mode,
-                      color: Theme.of(context).colorScheme.primary,
-                      size: 24,
-                    ),
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 10),
 
               CircleAvatar(
                 radius: 50,
@@ -126,7 +101,15 @@ class ProfilePage extends StatelessWidget {
                 },
                 child: _buildOption(Icons.help_outline, 'Help & Support'),
               ),
-              _buildOption(Icons.info_outline, 'About'),
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const AboutPage()),
+                  );
+                },
+                child: _buildOption(Icons.info_outline, 'About'),
+              ),
 
               const SizedBox(height: 20),
 

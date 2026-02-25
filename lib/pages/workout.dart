@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:fitness_app/services/support_widget.dart';
-import 'package:fitness_app/services/theme_provider.dart';
 
 class WorkoutPage extends StatelessWidget {
   const WorkoutPage({super.key});
@@ -67,7 +65,6 @@ class WorkoutPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final themeProvider = Provider.of<ThemeProvider>(context);
     return Scaffold(
       body: SafeArea(
         child: Padding(
@@ -84,40 +81,16 @@ class WorkoutPage extends StatelessWidget {
                     'All Workouts',
                     style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                   ),
-                  Row(
-                    children: [
-                      GestureDetector(
-                        onTap: () => themeProvider.toggleTheme(),
-                        child: Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.primaryContainer,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Icon(
-                            themeProvider.isDarkMode
-                                ? Icons.light_mode
-                                : Icons.dark_mode,
-                            color: Theme.of(context).colorScheme.primary,
-                            size: 24,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: Colors.deepPurple.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: const Icon(
-                          Icons.filter_list,
-                          color: Colors.deepPurple,
-                        ),
-                      ),
-                    ],
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.deepPurple.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(
+                      Icons.filter_list,
+                      color: Colors.deepPurple,
+                    ),
                   ),
                 ],
               ),
