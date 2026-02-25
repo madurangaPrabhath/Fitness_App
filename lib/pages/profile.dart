@@ -4,6 +4,7 @@ import 'package:fitness_app/services/theme_provider.dart';
 import 'package:fitness_app/pages/editprofile.dart';
 import 'package:fitness_app/pages/notifications.dart';
 import 'package:fitness_app/pages/settings.dart';
+import 'package:fitness_app/pages/helpsupport.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
@@ -116,7 +117,15 @@ class ProfilePage extends StatelessWidget {
                 },
                 child: _buildOption(Icons.settings_outlined, 'Settings'),
               ),
-              _buildOption(Icons.help_outline, 'Help & Support'),
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const HelpSupportPage()),
+                  );
+                },
+                child: _buildOption(Icons.help_outline, 'Help & Support'),
+              ),
               _buildOption(Icons.info_outline, 'About'),
 
               const SizedBox(height: 20),
