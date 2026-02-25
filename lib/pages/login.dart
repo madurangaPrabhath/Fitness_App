@@ -93,8 +93,9 @@ class _LoginPageState extends State<LoginPage> {
                       controller: _emailController,
                       keyboardType: TextInputType.emailAddress,
                       validator: (v) {
-                        if (v == null || v.trim().isEmpty)
+                        if (v == null || v.trim().isEmpty) {
                           return 'Enter your email';
+                        }
                         if (!RegExp(
                           r'^[\w\-.]+@([\w-]+\.)+[\w-]{2,4}$',
                         ).hasMatch(v.trim())) {
@@ -117,8 +118,9 @@ class _LoginPageState extends State<LoginPage> {
                       controller: _passwordController,
                       obscureText: _obscurePassword,
                       validator: (v) {
-                        if (v == null || v.isEmpty)
+                        if (v == null || v.isEmpty) {
                           return 'Enter your password';
+                        }
                         return null;
                       },
                       decoration: _inputDecoration(

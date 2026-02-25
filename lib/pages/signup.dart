@@ -29,6 +29,9 @@ class _SignUpPageState extends State<SignUpPage> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final screenHeight = MediaQuery.of(context).size.height;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final imageHeight = screenHeight * 0.28;
 
     return Scaffold(
       body: SingleChildScrollView(
@@ -37,7 +40,7 @@ class _SignUpPageState extends State<SignUpPage> {
             Stack(
               children: [
                 SizedBox(
-                  height: 260,
+                  height: imageHeight,
                   width: double.infinity,
                   child: Image.asset(
                     'images/calfstretch.jpeg',
@@ -66,16 +69,16 @@ class _SignUpPageState extends State<SignUpPage> {
             ),
 
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
+              padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.06),
               child: Form(
                 key: _formKey,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'Create Account',
                       style: TextStyle(
-                        fontSize: 28,
+                        fontSize: screenWidth * 0.065,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -88,7 +91,7 @@ class _SignUpPageState extends State<SignUpPage> {
                       ),
                     ),
 
-                    const SizedBox(height: 28),
+                    SizedBox(height: screenHeight * 0.025),
 
                     _buildTextField(
                       controller: _nameController,
@@ -101,7 +104,7 @@ class _SignUpPageState extends State<SignUpPage> {
                           : null,
                     ),
 
-                    const SizedBox(height: 16),
+                    SizedBox(height: screenHeight * 0.016),
 
                     _buildTextField(
                       controller: _emailController,
@@ -111,8 +114,9 @@ class _SignUpPageState extends State<SignUpPage> {
                       isDark: isDark,
                       keyboardType: TextInputType.emailAddress,
                       validator: (v) {
-                        if (v == null || v.trim().isEmpty)
+                        if (v == null || v.trim().isEmpty) {
                           return 'Enter your email';
+                        }
                         if (!RegExp(
                           r'^[\w\-.]+@([\w-]+\.)+[\w-]{2,4}$',
                         ).hasMatch(v.trim())) {
@@ -122,7 +126,7 @@ class _SignUpPageState extends State<SignUpPage> {
                       },
                     ),
 
-                    const SizedBox(height: 16),
+                    SizedBox(height: screenHeight * 0.016),
 
                     _buildTextField(
                       controller: _passwordController,
@@ -149,7 +153,7 @@ class _SignUpPageState extends State<SignUpPage> {
                       },
                     ),
 
-                    const SizedBox(height: 16),
+                    SizedBox(height: screenHeight * 0.016),
 
                     _buildTextField(
                       controller: _confirmPasswordController,
@@ -169,8 +173,9 @@ class _SignUpPageState extends State<SignUpPage> {
                             setState(() => _obscureConfirm = !_obscureConfirm),
                       ),
                       validator: (v) {
-                        if (v == null || v.isEmpty)
+                        if (v == null || v.isEmpty) {
                           return 'Confirm your password';
+                        }
                         if (v != _passwordController.text) {
                           return 'Passwords do not match';
                         }
@@ -178,7 +183,7 @@ class _SignUpPageState extends State<SignUpPage> {
                       },
                     ),
 
-                    const SizedBox(height: 28),
+                    SizedBox(height: screenHeight * 0.025),
 
                     SizedBox(
                       width: double.infinity,
@@ -205,7 +210,7 @@ class _SignUpPageState extends State<SignUpPage> {
                       ),
                     ),
 
-                    const SizedBox(height: 20),
+                    SizedBox(height: screenHeight * 0.02),
 
                     Row(
                       children: [
@@ -224,7 +229,7 @@ class _SignUpPageState extends State<SignUpPage> {
                       ],
                     ),
 
-                    const SizedBox(height: 16),
+                    SizedBox(height: screenHeight * 0.016),
 
                     Row(
                       children: [
@@ -246,7 +251,7 @@ class _SignUpPageState extends State<SignUpPage> {
                       ],
                     ),
 
-                    const SizedBox(height: 24),
+                    SizedBox(height: screenHeight * 0.02),
 
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -279,7 +284,7 @@ class _SignUpPageState extends State<SignUpPage> {
                       ],
                     ),
 
-                    const SizedBox(height: 30),
+                    SizedBox(height: screenHeight * 0.03),
                   ],
                 ),
               ),

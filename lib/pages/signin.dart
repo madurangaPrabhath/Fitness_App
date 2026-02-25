@@ -47,8 +47,8 @@ class _SignInPageState extends State<SignInPage> {
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [
-                        Colors.black.withValues(alpha: 0.5),
-                        Colors.transparent,
+                        Colors.black.withValues(alpha: 0.75),
+                        Colors.black.withValues(alpha: 0.45),
                         Theme.of(context).scaffoldBackgroundColor,
                       ],
                       stops: const [0.0, 0.5, 1.0],
@@ -57,7 +57,7 @@ class _SignInPageState extends State<SignInPage> {
                     ),
                   ),
                 ),
-                const Positioned(
+                Positioned(
                   top: 60,
                   left: 24,
                   child: Column(
@@ -70,12 +70,40 @@ class _SignInPageState extends State<SignInPage> {
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
                           height: 1.2,
+                          shadows: [
+                            Shadow(
+                              color: Colors.black.withValues(alpha: 0.7),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                            Shadow(
+                              color: Colors.black.withValues(alpha: 0.5),
+                              blurRadius: 16,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
                         ),
                       ),
-                      SizedBox(height: 8),
+                      const SizedBox(height: 8),
                       Text(
                         'Sign in to keep pushing your limits',
-                        style: TextStyle(fontSize: 14, color: Colors.white70),
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.white.withValues(alpha: 0.95),
+                          shadows: [
+                            Shadow(
+                              color: Colors.black.withValues(alpha: 0.7),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                            Shadow(
+                              color: Colors.black.withValues(alpha: 0.5),
+                              blurRadius: 16,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),
@@ -133,8 +161,9 @@ class _SignInPageState extends State<SignInPage> {
                         ),
                       ),
                       validator: (v) {
-                        if (v == null || v.isEmpty)
+                        if (v == null || v.isEmpty) {
                           return 'Enter your password';
+                        }
                         return null;
                       },
                     ),
