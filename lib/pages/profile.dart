@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:fitness_app/services/theme_provider.dart';
+import 'package:fitness_app/pages/editprofile.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
@@ -82,7 +83,15 @@ class ProfilePage extends StatelessWidget {
 
               const SizedBox(height: 30),
 
-              _buildOption(Icons.person_outline, 'Edit Profile'),
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const EditProfilePage()),
+                  );
+                },
+                child: _buildOption(Icons.person_outline, 'Edit Profile'),
+              ),
               _buildOption(Icons.notifications_outlined, 'Notifications'),
               _buildOption(Icons.settings_outlined, 'Settings'),
               _buildOption(Icons.help_outline, 'Help & Support'),
