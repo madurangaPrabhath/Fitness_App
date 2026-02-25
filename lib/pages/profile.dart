@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:fitness_app/services/theme_provider.dart';
 import 'package:fitness_app/pages/editprofile.dart';
 import 'package:fitness_app/pages/notifications.dart';
+import 'package:fitness_app/pages/settings.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
@@ -18,7 +19,6 @@ class ProfilePage extends StatelessWidget {
             children: [
               const SizedBox(height: 20),
 
-              // Theme toggle row
               Align(
                 alignment: Alignment.centerRight,
                 child: GestureDetector(
@@ -107,7 +107,15 @@ class ProfilePage extends StatelessWidget {
                   'Notifications',
                 ),
               ),
-              _buildOption(Icons.settings_outlined, 'Settings'),
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const SettingsPage()),
+                  );
+                },
+                child: _buildOption(Icons.settings_outlined, 'Settings'),
+              ),
               _buildOption(Icons.help_outline, 'Help & Support'),
               _buildOption(Icons.info_outline, 'About'),
 
