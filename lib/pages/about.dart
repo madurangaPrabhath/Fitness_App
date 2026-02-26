@@ -199,17 +199,9 @@ class AboutPage extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             _buildInfoTile(
-              icon: Icons.style_outlined,
-              title: 'Material Design 3',
-              subtitle: 'Modern design system',
-              color: const Color(0xFF7C4DFF),
-              isDark: isDark,
-            ),
-            const SizedBox(height: 8),
-            _buildInfoTile(
-              icon: Icons.sync_alt,
-              title: 'Provider',
-              subtitle: 'State management',
+              icon: Icons.local_fire_department,
+              title: 'Firebase',
+              subtitle: 'Backend & cloud services',
               color: const Color(0xFFFF6D00),
               isDark: isDark,
             ),
@@ -237,19 +229,7 @@ class AboutPage extends StatelessWidget {
               icon: Icons.gavel_outlined,
               title: 'Open Source Licenses',
               isDark: isDark,
-              onTap: () => showLicensePage(
-                context: context,
-                applicationName: 'FitLife',
-                applicationVersion: '1.0.0',
-                applicationIcon: Padding(
-                  padding: const EdgeInsets.all(8),
-                  child: Icon(
-                    Icons.fitness_center,
-                    size: 40,
-                    color: Colors.deepPurple,
-                  ),
-                ),
-              ),
+              onTap: () => _showOpenSourceLicenses(context),
             ),
 
             const SizedBox(height: 28),
@@ -844,6 +824,228 @@ class AboutPage extends StatelessWidget {
     );
   }
 
+  static void _showOpenSourceLicenses(BuildContext context) {
+    const packages = [
+      _OssPackage(
+        name: 'Flutter SDK',
+        version: '3.x',
+        description:
+            'Google\'s UI toolkit for building natively compiled applications '
+            'for mobile, web, and desktop from a single codebase.',
+        license: 'BSD 3-Clause',
+        licenseColor: Color(0xFF027DFD),
+      ),
+      _OssPackage(
+        name: 'Dart SDK',
+        version: '3.x',
+        description:
+            'A client-optimised programming language for fast apps on any platform, '
+            'developed by Google.',
+        license: 'BSD 3-Clause',
+        licenseColor: Color(0xFF027DFD),
+      ),
+      _OssPackage(
+        name: 'provider',
+        version: '^6.1.5+1',
+        description:
+            'A wrapper around InheritedWidget to make state management simpler '
+            'and more reusable. Used for theme and app-wide state in FitLife.',
+        license: 'MIT',
+        licenseColor: Color(0xFF00BFA5),
+      ),
+      _OssPackage(
+        name: 'url_launcher',
+        version: '^6.2.6',
+        description:
+            'A Flutter plugin for launching URLs in the mobile platform. '
+            'Used to open the developer portfolio link in the About page.',
+        license: 'BSD 3-Clause',
+        licenseColor: Color(0xFF027DFD),
+      ),
+      _OssPackage(
+        name: 'cupertino_icons',
+        version: '^1.0.8',
+        description:
+            'An asset repo containing the default set of icon assets used by '
+            "Flutter's Cupertino widgets.",
+        license: 'MIT',
+        licenseColor: Color(0xFF00BFA5),
+      ),
+      _OssPackage(
+        name: 'flutter_lints',
+        version: '^6.0.0',
+        description:
+            'Recommended lints for Flutter apps to encourage good coding '
+            'practices. Used as a dev dependency for static analysis.',
+        license: 'BSD 3-Clause',
+        licenseColor: Color(0xFF027DFD),
+      ),
+    ];
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        final isDark = Theme.of(ctx).brightness == Brightness.dark;
+        return DraggableScrollableSheet(
+          initialChildSize: 0.88,
+          maxChildSize: 0.95,
+          minChildSize: 0.5,
+          builder: (_, controller) {
+            return Container(
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xff1e1e2e) : Colors.white,
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(20),
+                ),
+              ),
+              child: Column(
+                children: [
+                  const SizedBox(height: 12),
+                  Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade400,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 16,
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(
+                          Icons.gavel_outlined,
+                          color: Colors.deepPurple,
+                          size: 22,
+                        ),
+                        const SizedBox(width: 10),
+                        const Text(
+                          'Open Source Licenses',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const Spacer(),
+                        IconButton(
+                          icon: const Icon(Icons.close, size: 20),
+                          onPressed: () => Navigator.pop(ctx),
+                          visualDensity: VisualDensity.compact,
+                        ),
+                      ],
+                    ),
+                  ),
+                  Divider(
+                    height: 1,
+                    color: isDark ? Colors.white12 : Colors.grey.shade200,
+                  ),
+                  Expanded(
+                    child: ListView(
+                      controller: controller,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 18,
+                      ),
+                      children: [
+                        Text(
+                          'FitLife is built with the following open source packages. '
+                          'We are grateful to their authors and contributors.',
+                          style: TextStyle(
+                            fontSize: 13,
+                            height: 1.6,
+                            color: isDark
+                                ? Colors.white70
+                                : Colors.grey.shade700,
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        ...packages.map((pkg) => _buildOssCard(pkg, isDark)),
+                        const SizedBox(height: 30),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  static Widget _buildOssCard(_OssPackage pkg, bool isDark) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xff2a2a3d) : Colors.grey.shade50,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: isDark ? Colors.white10 : Colors.grey.shade200,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  pkg.name,
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
+                decoration: BoxDecoration(
+                  color: pkg.licenseColor.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  pkg.license,
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: pkg.licenseColor,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text(
+            pkg.version,
+            style: TextStyle(
+              fontSize: 12,
+              color: Colors.deepPurple.withValues(alpha: 0.8),
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            pkg.description,
+            style: TextStyle(
+              fontSize: 13,
+              height: 1.5,
+              color: isDark ? Colors.white60 : Colors.grey.shade600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   static Future<void> _launchUrl() async {
     final uri = Uri.parse('https://madurangaprabhath.vercel.app/');
     if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
@@ -861,5 +1063,21 @@ class _FeatureItem {
     required this.icon,
     required this.label,
     required this.color,
+  });
+}
+
+class _OssPackage {
+  final String name;
+  final String version;
+  final String description;
+  final String license;
+  final Color licenseColor;
+
+  const _OssPackage({
+    required this.name,
+    required this.version,
+    required this.description,
+    required this.license,
+    required this.licenseColor,
   });
 }
