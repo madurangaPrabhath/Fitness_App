@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fitness_app/pages/signin.dart';
 import 'package:fitness_app/pages/editprofile.dart';
 import 'package:fitness_app/pages/notifications.dart';
 import 'package:fitness_app/pages/settings.dart';
@@ -116,7 +117,13 @@ class ProfilePage extends StatelessWidget {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(
-                  onPressed: () {},
+                  onPressed: () {
+                    Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(builder: (_) => const SignInPage()),
+                      (route) => false,
+                    );
+                  },
                   icon: const Icon(Icons.logout, color: Colors.white),
                   label: const Text(
                     'Logout',

@@ -251,15 +251,6 @@ class _HelpSupportPageState extends State<HelpSupportPage> {
             ),
             const SizedBox(height: 10),
             _buildContactTile(
-              icon: Icons.chat_outlined,
-              title: 'Live Chat',
-              subtitle: 'Available Mon–Fri, 9AM–6PM',
-              color: const Color(0xFF00BFA5),
-              isDark: isDark,
-              onTap: () => _showSnackBar('Starting live chat...'),
-            ),
-            const SizedBox(height: 10),
-            _buildContactTile(
               icon: Icons.bug_report_outlined,
               title: 'Report a Bug',
               subtitle: 'Help us improve the app',
