@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fitness_app/pages/signup.dart';
 import 'package:fitness_app/pages/bottomnav.dart';
 import 'package:fitness_app/pages/landing_page.dart';
+import 'package:fitness_app/services/database.dart';
+import 'package:fitness_app/services/shared_pref.dart';
 
 class SignInPage extends StatefulWidget {
   const SignInPage({super.key});
@@ -16,6 +19,84 @@ class _SignInPageState extends State<SignInPage> {
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
   bool _rememberMe = false;
+  bool _isLoading = false;
+
+  final _auth = FirebaseAuth.instance;
+  final _db = DatabaseMethods();
+  final _prefs = SharedPreferenceMethods();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadRememberMe();
+  }
+
+  Future<void> _loadRememberMe() async {
+    final remember = await _prefs.getRememberMe();
+    if (remember) {
+      final saved = await _prefs.getSavedEmail();
+      if (saved != null && saved.isNotEmpty) {
+        setState(() {
+          _rememberMe = true;
+          _emailController.text = saved;
+        });
+      }
+    }
+  }
+
+  Future<void> _signIn() async {
+    if (!_formKey.currentState!.validate()) return;
+    setState(() => _isLoading = true);
+    try {
+      final credential = await _auth.signInWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
+      );
+      final uid = credential.user!.uid;
+
+      await _prefs.setRememberMe(
+        remember: _rememberMe,
+        email: _emailController.text.trim(),
+      );
+
+      final doc = await _db.getUser(uid);
+      final data = doc.data() as Map<String, dynamic>? ?? {};
+      await _prefs.saveUserSession(
+        uid: uid,
+        name: data['name'] ?? '',
+        email: data['email'] ?? _emailController.text.trim(),
+      );
+
+      if (!mounted) return;
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const BottomNav()),
+      );
+    } on FirebaseAuthException catch (e) {
+      final msg = switch (e.code) {
+        'user-not-found' => 'No account found for this email.',
+        'wrong-password' => 'Incorrect password. Please try again.',
+        'invalid-email' => 'The email address is invalid.',
+        'user-disabled' => 'This account has been disabled.',
+        'too-many-requests' => 'Too many attempts. Please try again later.',
+        _ => e.message ?? 'Sign in failed. Please try again.',
+      };
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(msg),
+            backgroundColor: Colors.redAccent,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
 
   @override
   void dispose() {
@@ -241,31 +322,34 @@ class _SignInPageState extends State<SignInPage> {
                       width: double.infinity,
                       height: 52,
                       child: ElevatedButton(
-                        onPressed: () {
-                          if (_formKey.currentState!.validate()) {
-                            Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const BottomNav(),
-                              ),
-                            );
-                          }
-                        },
+                        onPressed: _isLoading ? null : _signIn,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.deepPurple,
                           foregroundColor: Colors.white,
+                          disabledBackgroundColor: Colors.deepPurple.withValues(
+                            alpha: 0.6,
+                          ),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(16),
                           ),
                           elevation: 2,
                         ),
-                        child: const Text(
-                          'Sign In',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
+                        child: _isLoading
+                            ? const SizedBox(
+                                width: 22,
+                                height: 22,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2.5,
+                                ),
+                              )
+                            : const Text(
+                                'Sign In',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
                       ),
                     ),
 
