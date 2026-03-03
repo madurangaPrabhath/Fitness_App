@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fitness_app/pages/signin.dart';
 import 'package:fitness_app/pages/landing_page.dart';
+import 'package:fitness_app/pages/bottomnav.dart';
+import 'package:fitness_app/services/database.dart';
+import 'package:fitness_app/services/shared_pref.dart';
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
@@ -17,6 +21,70 @@ class _SignUpPageState extends State<SignUpPage> {
   final _confirmPasswordController = TextEditingController();
   bool _obscurePassword = true;
   bool _obscureConfirm = true;
+  bool _isLoading = false;
+
+  final _auth = FirebaseAuth.instance;
+  final _db = DatabaseMethods();
+  final _prefs = SharedPreferenceMethods();
+
+  Future<void> _signUp() async {
+    if (!_formKey.currentState!.validate()) return;
+    setState(() => _isLoading = true);
+    try {
+      final credential = await _auth.createUserWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
+      );
+      final uid = credential.user!.uid;
+
+      await credential.user!.updateDisplayName(_nameController.text.trim());
+
+      final userInfo = {
+        'uid': uid,
+        'name': _nameController.text.trim(),
+        'email': _emailController.text.trim(),
+        'createdAt': DateTime.now().toIso8601String(),
+        'totalWorkouts': 0,
+        'totalCalories': 0,
+        'totalMinutes': 0,
+      };
+      await _db.addUser(uid, userInfo);
+
+      await _prefs.saveUserSession(
+        uid: uid,
+        name: _nameController.text.trim(),
+        email: _emailController.text.trim(),
+      );
+
+      if (!mounted) return;
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const BottomNav()),
+      );
+    } on FirebaseAuthException catch (e) {
+      final msg = switch (e.code) {
+        'email-already-in-use' => 'An account with this email already exists.',
+        'invalid-email' => 'The email address is invalid.',
+        'weak-password' => 'Password is too weak. Use at least 6 characters.',
+        'operation-not-allowed' => 'Sign up is currently disabled.',
+        _ => e.message ?? 'Sign up failed. Please try again.',
+      };
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(msg),
+            backgroundColor: Colors.redAccent,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
 
   @override
   void dispose() {
@@ -220,24 +288,34 @@ class _SignUpPageState extends State<SignUpPage> {
                       width: double.infinity,
                       height: 52,
                       child: ElevatedButton(
-                        onPressed: () {
-                          if (_formKey.currentState!.validate()) {}
-                        },
+                        onPressed: _isLoading ? null : _signUp,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.deepPurple,
                           foregroundColor: Colors.white,
+                          disabledBackgroundColor: Colors.deepPurple.withValues(
+                            alpha: 0.6,
+                          ),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(16),
                           ),
                           elevation: 2,
                         ),
-                        child: const Text(
-                          'Sign Up',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
+                        child: _isLoading
+                            ? const SizedBox(
+                                width: 22,
+                                height: 22,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2.5,
+                                ),
+                              )
+                            : const Text(
+                                'Sign Up',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
                       ),
                     ),
 
