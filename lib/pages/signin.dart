@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fitness_app/pages/signup.dart';
 import 'package:fitness_app/pages/bottomnav.dart';
+import 'package:fitness_app/pages/landing_page.dart';
 
 class SignInPage extends StatefulWidget {
   const SignInPage({super.key});
@@ -106,6 +107,23 @@ class _SignInPageState extends State<SignInPage> {
                         ),
                       ),
                     ],
+                  ),
+                ),
+                Positioned(
+                  top: 0,
+                  left: 0,
+                  child: SafeArea(
+                    child: IconButton(
+                      icon: const Icon(
+                        Icons.arrow_back_ios_new,
+                        color: Colors.white,
+                        size: 20,
+                      ),
+                      onPressed: () => Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (_) => const LandingPage()),
+                      ),
+                    ),
                   ),
                 ),
               ],

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:fitness_app/pages/signin.dart';
-import 'package:fitness_app/pages/signup.dart';
 
 class LandingPage extends StatelessWidget {
   const LandingPage({super.key});
@@ -19,9 +18,9 @@ class LandingPage extends StatelessWidget {
             decoration: const BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  Color(0xCC000000),
-                  Color(0x55000000),
-                  Color(0xDD000000),
+                  Color(0xE6000000),
+                  Color(0x99000000),
+                  Color(0xF2000000),
                 ],
                 stops: [0.0, 0.45, 1.0],
                 begin: Alignment.topCenter,
@@ -74,6 +73,18 @@ class LandingPage extends StatelessWidget {
                       color: Colors.white,
                       height: 1.15,
                       letterSpacing: -0.5,
+                      shadows: [
+                        Shadow(
+                          color: Colors.black,
+                          blurRadius: 12,
+                          offset: Offset(0, 3),
+                        ),
+                        Shadow(
+                          color: Colors.black54,
+                          blurRadius: 24,
+                          offset: Offset(0, 6),
+                        ),
+                      ],
                     ),
                   ),
 
@@ -83,8 +94,15 @@ class LandingPage extends StatelessWidget {
                     'Track workouts, monitor progress and\nstay motivated — all in one place.',
                     style: TextStyle(
                       fontSize: 15,
-                      color: Colors.white.withValues(alpha: 0.75),
+                      color: Colors.white,
                       height: 1.55,
+                      shadows: [
+                        Shadow(
+                          color: Colors.black87,
+                          blurRadius: 10,
+                          offset: Offset(0, 2),
+                        ),
+                      ],
                     ),
                   ),
 
@@ -114,7 +132,7 @@ class LandingPage extends StatelessWidget {
                     child: ElevatedButton(
                       onPressed: () => Navigator.pushReplacement(
                         context,
-                        MaterialPageRoute(builder: (_) => const SignUpPage()),
+                        MaterialPageRoute(builder: (_) => const SignInPage()),
                       ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.deepPurple,
@@ -143,38 +161,7 @@ class LandingPage extends StatelessWidget {
                     ),
                   ),
 
-                  const SizedBox(height: 18),
-
-                  Center(
-                    child: GestureDetector(
-                      onTap: () => Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(builder: (_) => const SignInPage()),
-                      ),
-                      child: RichText(
-                        text: TextSpan(
-                          text: 'Already have an account? ',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.white.withValues(alpha: 0.65),
-                          ),
-                          children: const [
-                            TextSpan(
-                              text: 'Sign In',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w700,
-                                decoration: TextDecoration.underline,
-                                decorationColor: Colors.white,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-
-                  SizedBox(height: size.height * 0.04),
+                  SizedBox(height: size.height * 0.06),
                 ],
               ),
             ),
