@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
 import 'firebase_options.dart';
-import 'pages/signup.dart';
+import 'pages/landing_page.dart';
 import 'services/theme_provider.dart';
 
 void main() async {
@@ -28,7 +28,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeProvider.lightTheme,
       darkTheme: ThemeProvider.darkTheme,
       themeMode: themeProvider.themeMode,
-      home: const SignUpPage(),
+      home: const LandingPage(),
     );
   }
 }
