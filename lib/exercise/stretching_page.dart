@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:fitness_app/exercise/exercise_detail.dart';
 
 class _StretchExercise {
   final String name;
@@ -115,62 +116,94 @@ class _ExerciseCard extends StatelessWidget {
 
   const _ExerciseCard({required this.exercise});
 
+  // Parses e.g. "2 sets | 20 repetition" → (sets: 2, reps: 20)
+  static (int sets, int reps) _parseSetsReps(String raw) {
+    final parts = raw.split('|');
+    final sets =
+        int.tryParse(
+          RegExp(r'\d+').firstMatch(parts.elementAtOrNull(0) ?? '')?.group(0) ??
+              '2',
+        ) ??
+        2;
+    final reps =
+        int.tryParse(
+          RegExp(r'\d+').firstMatch(parts.elementAtOrNull(1) ?? '')?.group(0) ??
+              '20',
+        ) ??
+        20;
+    return (sets, reps);
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 14),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF6C63FF).withValues(alpha: 0.07),
-            blurRadius: 16,
-            spreadRadius: 0,
-            offset: const Offset(0, 6),
+    final (sets, reps) = _parseSetsReps(exercise.sets);
+    return GestureDetector(
+      onTap: () => Navigator.of(context).push(
+        CupertinoPageRoute(
+          builder: (_) => ExerciseDetailPage(
+            name: exercise.name,
+            imagePath: exercise.imagePath,
+            duration: exercise.time,
+            sets: sets,
+            defaultReps: reps,
           ),
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        ),
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    exercise.name,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      color: Color(0xFF1A1A2E),
-                      letterSpacing: -0.2,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    exercise.sets,
-                    style: const TextStyle(
-                      fontSize: 13,
-                      color: Color(0xFF8E8EA0),
-                      fontWeight: FontWeight.w400,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  _TimeBadge(time: exercise.time),
-                ],
-              ),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 14),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF6C63FF).withValues(alpha: 0.07),
+              blurRadius: 16,
+              spreadRadius: 0,
+              offset: const Offset(0, 6),
             ),
-            const SizedBox(width: 14),
-            _ExerciseThumbnail(imagePath: exercise.imagePath),
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.04),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
+            ),
           ],
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      exercise.name,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF1A1A2E),
+                        letterSpacing: -0.2,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      exercise.sets,
+                      style: const TextStyle(
+                        fontSize: 13,
+                        color: Color(0xFF8E8EA0),
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    _TimeBadge(time: exercise.time),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 14),
+              _ExerciseThumbnail(imagePath: exercise.imagePath),
+            ],
+          ),
         ),
       ),
     );
@@ -224,7 +257,7 @@ class _ExerciseThumbnail extends StatelessWidget {
         width: 90,
         height: 90,
         fit: BoxFit.cover,
-        errorBuilder: (_, __, ___) => Container(
+        errorBuilder: (_, _, _) => Container(
           width: 90,
           height: 90,
           decoration: BoxDecoration(
