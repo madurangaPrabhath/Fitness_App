@@ -169,7 +169,7 @@ class HomePage extends StatelessWidget {
                       ),
                       const SizedBox(width: 15),
                       CategoryCard(
-                        title: 'Legs',
+                        title: 'Stretching',
                         subtitle: '8 Exercises\n120 Minutes',
                         color: Colors.blue,
                         image: 'images/fit3.png',
