@@ -37,24 +37,30 @@ class _SignUpPageState extends State<SignUpPage> {
       );
       final uid = credential.user!.uid;
 
-      await credential.user!.updateDisplayName(_nameController.text.trim());
+      try {
+        await credential.user!.updateDisplayName(_nameController.text.trim());
+      } catch (_) {}
 
-      final userInfo = {
-        'uid': uid,
-        'name': _nameController.text.trim(),
-        'email': _emailController.text.trim(),
-        'createdAt': DateTime.now().toIso8601String(),
-        'totalWorkouts': 0,
-        'totalCalories': 0,
-        'totalMinutes': 0,
-      };
-      await _db.addUser(uid, userInfo);
+      try {
+        final userInfo = {
+          'uid': uid,
+          'name': _nameController.text.trim(),
+          'email': _emailController.text.trim(),
+          'createdAt': DateTime.now().toIso8601String(),
+          'totalWorkouts': 0,
+          'totalCalories': 0,
+          'totalMinutes': 0,
+        };
+        await _db.addUser(uid, userInfo);
+      } catch (_) {}
 
-      await _prefs.saveUserSession(
-        uid: uid,
-        name: _nameController.text.trim(),
-        email: _emailController.text.trim(),
-      );
+      try {
+        await _prefs.saveUserSession(
+          uid: uid,
+          name: _nameController.text.trim(),
+          email: _emailController.text.trim(),
+        );
+      } catch (_) {}
 
       if (!mounted) return;
       Navigator.pushReplacement(
@@ -67,12 +73,27 @@ class _SignUpPageState extends State<SignUpPage> {
         'invalid-email' => 'The email address is invalid.',
         'weak-password' => 'Password is too weak. Use at least 6 characters.',
         'operation-not-allowed' => 'Sign up is currently disabled.',
+        'network-request-failed' =>
+          'No internet connection. Check your network.',
         _ => e.message ?? 'Sign up failed. Please try again.',
       };
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(msg),
+            backgroundColor: Colors.redAccent,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Something went wrong: ${e.toString()}'),
             backgroundColor: Colors.redAccent,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(

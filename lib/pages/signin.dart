@@ -54,18 +54,33 @@ class _SignInPageState extends State<SignInPage> {
       );
       final uid = credential.user!.uid;
 
-      await _prefs.setRememberMe(
-        remember: _rememberMe,
-        email: _emailController.text.trim(),
-      );
+      // Remember-me — non-critical, ignore failure
+      try {
+        await _prefs.setRememberMe(
+          remember: _rememberMe,
+          email: _emailController.text.trim(),
+        );
+      } catch (_) {}
 
-      final doc = await _db.getUser(uid);
-      final data = doc.data() as Map<String, dynamic>? ?? {};
-      await _prefs.saveUserSession(
-        uid: uid,
-        name: data['name'] ?? '',
-        email: data['email'] ?? _emailController.text.trim(),
-      );
+      // Fetch Firestore profile + cache locally — non-critical, ignore failure
+      try {
+        final doc = await _db.getUser(uid);
+        final data = doc.data() as Map<String, dynamic>? ?? {};
+        await _prefs.saveUserSession(
+          uid: uid,
+          name: data['name'] ?? credential.user!.displayName ?? '',
+          email: data['email'] ?? _emailController.text.trim(),
+        );
+      } catch (_) {
+        // Still persist minimal session even if Firestore is unreachable
+        try {
+          await _prefs.saveUserSession(
+            uid: uid,
+            name: credential.user!.displayName ?? '',
+            email: _emailController.text.trim(),
+          );
+        } catch (_) {}
+      }
 
       if (!mounted) return;
       Navigator.pushReplacement(
@@ -76,15 +91,32 @@ class _SignInPageState extends State<SignInPage> {
       final msg = switch (e.code) {
         'user-not-found' => 'No account found for this email.',
         'wrong-password' => 'Incorrect password. Please try again.',
+        'invalid-credential' || 'INVALID_LOGIN_CREDENTIALS' =>
+          'Incorrect email or password. Please try again.',
         'invalid-email' => 'The email address is invalid.',
         'user-disabled' => 'This account has been disabled.',
         'too-many-requests' => 'Too many attempts. Please try again later.',
+        'network-request-failed' =>
+          'No internet connection. Check your network.',
         _ => e.message ?? 'Sign in failed. Please try again.',
       };
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(msg),
+            backgroundColor: Colors.redAccent,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Something went wrong: ${e.toString()}'),
             backgroundColor: Colors.redAccent,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
