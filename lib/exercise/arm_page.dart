@@ -60,8 +60,11 @@ class ArmPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F4F8),
+      backgroundColor: isDark
+          ? const Color(0xFF1E1E2C)
+          : const Color(0xFFF4F4F8),
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -92,13 +95,15 @@ class _TopNavBar extends StatelessWidget {
       child: Stack(
         alignment: Alignment.center,
         children: [
-          const Text(
+          Text(
             'Arm Workout',
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.w700,
               letterSpacing: -0.3,
-              color: Color(0xFF1A1A2E),
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.white
+                  : const Color(0xFF1A1A2E),
             ),
           ),
           Align(
@@ -143,6 +148,7 @@ class _ExerciseCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final (sets, reps) = _parseSetsReps(exercise.sets);
     return GestureDetector(
       onTap: () => Navigator.of(context).push(
@@ -159,7 +165,7 @@ class _ExerciseCard extends StatelessWidget {
       child: Container(
         margin: const EdgeInsets.only(bottom: 14),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: isDark ? const Color(0xFF2A2A3D) : Colors.white,
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
@@ -186,10 +192,10 @@ class _ExerciseCard extends StatelessWidget {
                   children: [
                     Text(
                       exercise.name,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
-                        color: Color(0xFF1A1A2E),
+                        color: isDark ? Colors.white : const Color(0xFF1A1A2E),
                         letterSpacing: -0.2,
                       ),
                     ),
@@ -224,10 +230,11 @@ class _TimeBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
-        color: const Color(0xFFE8F0FF),
+        color: isDark ? const Color(0xFF1A2E5A) : const Color(0xFFE8F0FF),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Row(
@@ -272,7 +279,9 @@ class _ExerciseThumbnail extends StatelessWidget {
           width: 90,
           height: 90,
           decoration: BoxDecoration(
-            color: const Color(0xFFE8F0FF),
+            color: Theme.of(context).brightness == Brightness.dark
+                ? const Color(0xFF1A2E5A)
+                : const Color(0xFFE8F0FF),
             borderRadius: BorderRadius.circular(12),
           ),
           child: const Icon(

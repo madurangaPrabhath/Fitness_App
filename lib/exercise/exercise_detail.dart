@@ -153,8 +153,11 @@ class _ExerciseDetailPageState extends State<ExerciseDetailPage>
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F4F8),
+      backgroundColor: isDark
+          ? const Color(0xFF1E1E2C)
+          : const Color(0xFFF4F4F8),
       body: SafeArea(
         top: false,
         child: SingleChildScrollView(
@@ -337,15 +340,16 @@ class _InfoSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           name,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 26,
             fontWeight: FontWeight.w800,
-            color: Color(0xFF1A1A2E),
+            color: isDark ? Colors.white : const Color(0xFF1A1A2E),
             letterSpacing: -0.5,
             height: 1.2,
           ),
@@ -353,9 +357,9 @@ class _InfoSection extends StatelessWidget {
         const SizedBox(height: 10),
         Text(
           description,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 14.5,
-            color: Color(0xFF6B6B80),
+            color: isDark ? const Color(0xFF9E9EB8) : const Color(0xFF6B6B80),
             height: 1.6,
             fontWeight: FontWeight.w400,
           ),
@@ -387,11 +391,12 @@ class _TimerCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(20, 22, 20, 24),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? const Color(0xFF2A2A3D) : Colors.white,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
@@ -411,12 +416,12 @@ class _TimerCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
+              Text(
                 'Workout Timer',
                 style: TextStyle(
                   fontSize: 17,
                   fontWeight: FontWeight.w700,
-                  color: Color(0xFF1A1A2E),
+                  color: isDark ? Colors.white : const Color(0xFF1A1A2E),
                   letterSpacing: -0.2,
                 ),
               ),
@@ -483,10 +488,12 @@ class _TimerCard extends StatelessWidget {
                           const SizedBox(height: 6),
                           Text(
                             displayTime,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 22,
                               fontWeight: FontWeight.w800,
-                              color: Color(0xFF1A1A2E),
+                              color: isDark
+                                  ? Colors.white
+                                  : const Color(0xFF1A1A2E),
                               letterSpacing: 1.5,
                             ),
                           ),
@@ -611,10 +618,12 @@ class _SetsCard extends StatelessWidget {
             children: [
               Text(
                 '$completed',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 42,
                   fontWeight: FontWeight.w800,
-                  color: Color(0xFF1A1A2E),
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.white
+                      : const Color(0xFF1A1A2E),
                   height: 1,
                 ),
               ),
@@ -682,10 +691,12 @@ class _RepsCard extends StatelessWidget {
                   child: Center(
                     child: Text(
                       '$reps',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 36,
                         fontWeight: FontWeight.w800,
-                        color: Color(0xFF1A1A2E),
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? Colors.white
+                            : const Color(0xFF1A1A2E),
                         height: 1,
                       ),
                     ),
@@ -754,10 +765,11 @@ class _StatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? const Color(0xFF2A2A3D) : Colors.white,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
