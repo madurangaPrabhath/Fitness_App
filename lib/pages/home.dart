@@ -4,6 +4,7 @@ import 'package:fitness_app/services/support_widget.dart';
 import 'package:fitness_app/exercise/cardio_page.dart';
 import 'package:fitness_app/exercise/arm_page.dart';
 import 'package:fitness_app/exercise/stretching_page.dart';
+import 'package:fitness_app/exercise/exercise_detail.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -210,26 +211,68 @@ class HomePage extends StatelessWidget {
 
                 const SizedBox(height: 15),
 
-                const WorkoutCard(
-                  title: 'Squats',
-                  details: '2 sets | 10 Repetition',
-                  time: '10:00',
-                  icon: Icons.fitness_center,
-                  iconColor: Color(0xFF7C4DFF),
+                GestureDetector(
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const ExerciseDetailPage(
+                        name: 'Squats',
+                        imagePath: 'images/fit1.png',
+                        duration: '10:00',
+                        sets: 2,
+                        defaultReps: 10,
+                      ),
+                    ),
+                  ),
+                  child: const WorkoutCard(
+                    title: 'Squats',
+                    details: '2 sets | 10 Repetition',
+                    time: '10:00',
+                    icon: Icons.fitness_center,
+                    iconColor: Color(0xFF7C4DFF),
+                  ),
                 ),
-                const WorkoutCard(
-                  title: 'Push Ups',
-                  details: '3 sets | 15 Repetition',
-                  time: '08:00',
-                  icon: Icons.sports_gymnastics,
-                  iconColor: Color(0xFFFF6D00),
+                GestureDetector(
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const ExerciseDetailPage(
+                        name: 'Push-Ups',
+                        imagePath: 'images/girl.jpg',
+                        duration: '08:00',
+                        sets: 3,
+                        defaultReps: 15,
+                      ),
+                    ),
+                  ),
+                  child: const WorkoutCard(
+                    title: 'Push Ups',
+                    details: '3 sets | 15 Repetition',
+                    time: '08:00',
+                    icon: Icons.sports_gymnastics,
+                    iconColor: Color(0xFFFF6D00),
+                  ),
                 ),
-                const WorkoutCard(
-                  title: 'Lunges',
-                  details: '3 sets | 12 Repetition',
-                  time: '12:00',
-                  icon: Icons.directions_walk,
-                  iconColor: Color(0xFF00BFA5),
+                GestureDetector(
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const ExerciseDetailPage(
+                        name: 'Lunges',
+                        imagePath: 'images/fit2.png',
+                        duration: '12:00',
+                        sets: 3,
+                        defaultReps: 12,
+                      ),
+                    ),
+                  ),
+                  child: const WorkoutCard(
+                    title: 'Lunges',
+                    details: '3 sets | 12 Repetition',
+                    time: '12:00',
+                    icon: Icons.directions_walk,
+                    iconColor: Color(0xFF00BFA5),
+                  ),
                 ),
 
                 const SizedBox(height: 20),

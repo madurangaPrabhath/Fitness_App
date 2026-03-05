@@ -2,9 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:fitness_app/exercise/exercise_detail.dart';
 import 'package:fitness_app/services/support_widget.dart';
 
-class WorkoutPage extends StatelessWidget {
+class WorkoutPage extends StatefulWidget {
   const WorkoutPage({super.key});
 
+  @override
+  State<WorkoutPage> createState() => _WorkoutPageState();
+}
+
+class _WorkoutPageState extends State<WorkoutPage> {
   static const List<Map<String, dynamic>> _workouts = [
     {
       'title': 'Squats',
@@ -13,6 +18,7 @@ class WorkoutPage extends StatelessWidget {
       'icon': Icons.fitness_center,
       'color': 0xFF7C4DFF,
       'imagePath': 'images/fit1.png',
+      'category': 'Strength',
     },
     {
       'title': 'Lunges',
@@ -21,6 +27,7 @@ class WorkoutPage extends StatelessWidget {
       'icon': Icons.directions_walk,
       'color': 0xFF00BFA5,
       'imagePath': 'images/fit2.png',
+      'category': 'Strength',
     },
     {
       'title': 'Plank',
@@ -29,6 +36,7 @@ class WorkoutPage extends StatelessWidget {
       'icon': Icons.accessibility_new,
       'color': 0xFFE91E63,
       'imagePath': 'images/fit3.png',
+      'category': 'Core',
     },
     {
       'title': 'Deadlifts',
@@ -37,6 +45,7 @@ class WorkoutPage extends StatelessWidget {
       'icon': Icons.fitness_center,
       'color': 0xFF00C853,
       'imagePath': 'images/fit1.png',
+      'category': 'Strength',
     },
     {
       'title': 'Bicep Curls',
@@ -45,6 +54,7 @@ class WorkoutPage extends StatelessWidget {
       'icon': Icons.fitness_center,
       'color': 0xFF2979FF,
       'imagePath': 'images/fit1.png',
+      'category': 'Strength',
     },
     {
       'title': 'Tricep Dips',
@@ -53,6 +63,7 @@ class WorkoutPage extends StatelessWidget {
       'icon': Icons.sports_gymnastics,
       'color': 0xFF7C4DFF,
       'imagePath': 'images/fit2.png',
+      'category': 'Strength',
     },
     {
       'title': 'Shoulder Press',
@@ -61,6 +72,7 @@ class WorkoutPage extends StatelessWidget {
       'icon': Icons.accessibility_new,
       'color': 0xFF00BFA5,
       'imagePath': 'images/shoulder-stretch.jpg',
+      'category': 'Strength',
     },
     {
       'title': 'Lateral Raises',
@@ -69,6 +81,7 @@ class WorkoutPage extends StatelessWidget {
       'icon': Icons.sports_handball,
       'color': 0xFFFF6D00,
       'imagePath': 'images/fit3.png',
+      'category': 'Strength',
     },
     {
       'title': 'Push-Ups',
@@ -77,6 +90,7 @@ class WorkoutPage extends StatelessWidget {
       'icon': Icons.sports_gymnastics,
       'color': 0xFFE91E63,
       'imagePath': 'images/girl.jpg',
+      'category': 'Strength',
     },
     {
       'title': 'Hammer Curls',
@@ -85,6 +99,7 @@ class WorkoutPage extends StatelessWidget {
       'icon': Icons.fitness_center,
       'color': 0xFF00C853,
       'imagePath': 'images/fit1.png',
+      'category': 'Strength',
     },
     {
       'title': 'Jump Rope',
@@ -93,6 +108,7 @@ class WorkoutPage extends StatelessWidget {
       'icon': Icons.directions_run,
       'color': 0xFF2979FF,
       'imagePath': 'images/fit1.png',
+      'category': 'Cardio',
     },
     {
       'title': 'High Knees',
@@ -101,6 +117,7 @@ class WorkoutPage extends StatelessWidget {
       'icon': Icons.directions_walk,
       'color': 0xFF00BFA5,
       'imagePath': 'images/fit2.png',
+      'category': 'Cardio',
     },
     {
       'title': 'Burpees',
@@ -109,6 +126,7 @@ class WorkoutPage extends StatelessWidget {
       'icon': Icons.local_fire_department,
       'color': 0xFFFF3D00,
       'imagePath': 'images/fit3.png',
+      'category': 'Cardio',
     },
     {
       'title': 'Jumping Jacks',
@@ -117,6 +135,7 @@ class WorkoutPage extends StatelessWidget {
       'icon': Icons.sports,
       'color': 0xFF7C4DFF,
       'imagePath': 'images/girl.jpg',
+      'category': 'Cardio',
     },
     {
       'title': 'Mountain Climbers',
@@ -125,6 +144,7 @@ class WorkoutPage extends StatelessWidget {
       'icon': Icons.terrain,
       'color': 0xFF6D4C41,
       'imagePath': 'images/fit1.png',
+      'category': 'Cardio',
     },
     {
       'title': 'Box Jumps',
@@ -133,6 +153,7 @@ class WorkoutPage extends StatelessWidget {
       'icon': Icons.sports_gymnastics,
       'color': 0xFFFF6D00,
       'imagePath': 'images/fit2.png',
+      'category': 'Cardio',
     },
     {
       'title': 'Calf Stretch',
@@ -141,6 +162,7 @@ class WorkoutPage extends StatelessWidget {
       'icon': Icons.directions_walk,
       'color': 0xFF00BFA5,
       'imagePath': 'images/calfstretch.jpeg',
+      'category': 'Stretching',
     },
     {
       'title': 'Cat-Cow Stretch',
@@ -149,6 +171,7 @@ class WorkoutPage extends StatelessWidget {
       'icon': Icons.accessibility_new,
       'color': 0xFF7C4DFF,
       'imagePath': 'images/catcow.jpg',
+      'category': 'Stretching',
     },
     {
       'title': 'Shoulder Stretch',
@@ -157,6 +180,7 @@ class WorkoutPage extends StatelessWidget {
       'icon': Icons.sports_gymnastics,
       'color': 0xFFFF6D00,
       'imagePath': 'images/shoulder-stretch.jpg',
+      'category': 'Stretching',
     },
     {
       'title': 'Chest Stretch',
@@ -165,6 +189,7 @@ class WorkoutPage extends StatelessWidget {
       'icon': Icons.fitness_center,
       'color': 0xFFE91E63,
       'imagePath': 'images/fit2.png',
+      'category': 'Stretching',
     },
     {
       'title': 'Hamstring Stretch',
@@ -173,8 +198,23 @@ class WorkoutPage extends StatelessWidget {
       'icon': Icons.self_improvement,
       'color': 0xFF6C63FF,
       'imagePath': 'images/hamstring-stretch.png',
+      'category': 'Stretching',
     },
   ];
+
+  static const List<Map<String, dynamic>> _categories = [
+    {'label': 'All', 'icon': Icons.apps},
+    {'label': 'Strength', 'icon': Icons.fitness_center},
+    {'label': 'Cardio', 'icon': Icons.directions_run},
+    {'label': 'Core', 'icon': Icons.accessibility_new},
+    {'label': 'Stretching', 'icon': Icons.self_improvement},
+  ];
+
+  String _selectedCategory = 'All';
+
+  List<Map<String, dynamic>> get _filteredWorkouts => _selectedCategory == 'All'
+      ? _workouts
+      : _workouts.where((w) => w['category'] == _selectedCategory).toList();
 
   static (int sets, int reps) _parseSetsReps(String details) {
     final parts = details.split('|');
@@ -193,8 +233,103 @@ class WorkoutPage extends StatelessWidget {
     return (sets, reps);
   }
 
+  void _showFilterSheet() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (ctx, setSheetState) {
+            return Padding(
+              padding: const EdgeInsets.fromLTRB(24, 20, 24, 32),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Filter by Category',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          setSheetState(() {});
+                          setState(() => _selectedCategory = 'All');
+                          Navigator.pop(ctx);
+                        },
+                        child: const Text('Reset'),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Wrap(
+                    spacing: 10,
+                    runSpacing: 10,
+                    children: _categories.map((cat) {
+                      final isSelected =
+                          _selectedCategory == cat['label'] as String;
+                      return ChoiceChip(
+                        avatar: Icon(
+                          cat['icon'] as IconData,
+                          size: 18,
+                          color: isSelected ? Colors.white : Colors.deepPurple,
+                        ),
+                        label: Text(cat['label'] as String),
+                        selected: isSelected,
+                        selectedColor: Colors.deepPurple,
+                        labelStyle: TextStyle(
+                          color: isSelected ? Colors.white : null,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        onSelected: (_) {
+                          setSheetState(
+                            () => _selectedCategory = cat['label'] as String,
+                          );
+                          setState(
+                            () => _selectedCategory = cat['label'] as String,
+                          );
+                        },
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 20),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.deepPurple,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                      ),
+                      onPressed: () => Navigator.pop(ctx),
+                      child: const Text(
+                        'Apply',
+                        style: TextStyle(fontSize: 16),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final filtered = _filteredWorkouts;
     return Scaffold(
       body: SafeArea(
         child: Padding(
@@ -211,15 +346,22 @@ class WorkoutPage extends StatelessWidget {
                     'All Workouts',
                     style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                   ),
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Colors.deepPurple.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Icon(
-                      Icons.filter_list,
-                      color: Colors.deepPurple,
+                  GestureDetector(
+                    onTap: _showFilterSheet,
+                    child: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: _selectedCategory == 'All'
+                            ? Colors.deepPurple.withValues(alpha: 0.1)
+                            : Colors.deepPurple,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Icon(
+                        Icons.filter_list,
+                        color: _selectedCategory == 'All'
+                            ? Colors.deepPurple
+                            : Colors.white,
+                      ),
                     ),
                   ),
                 ],
@@ -227,41 +369,52 @@ class WorkoutPage extends StatelessWidget {
 
               const SizedBox(height: 8),
               Text(
-                '${_workouts.length} exercises available',
+                _selectedCategory == 'All'
+                    ? '${filtered.length} exercises available'
+                    : '${filtered.length} exercises · $_selectedCategory',
                 style: const TextStyle(color: Colors.grey, fontSize: 14),
               ),
 
               const SizedBox(height: 20),
 
               Expanded(
-                child: ListView.builder(
-                  itemCount: _workouts.length,
-                  itemBuilder: (context, index) {
-                    final w = _workouts[index];
-                    final (sets, reps) = _parseSetsReps(w['details'] as String);
-                    return GestureDetector(
-                      onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => ExerciseDetailPage(
-                            name: w['title'] as String,
-                            imagePath: w['imagePath'] as String,
-                            duration: w['time'] as String,
-                            sets: sets,
-                            defaultReps: reps,
-                          ),
+                child: filtered.isEmpty
+                    ? const Center(
+                        child: Text(
+                          'No exercises found for this category.',
+                          style: TextStyle(color: Colors.grey),
                         ),
+                      )
+                    : ListView.builder(
+                        itemCount: filtered.length,
+                        itemBuilder: (context, index) {
+                          final w = filtered[index];
+                          final (sets, reps) = _parseSetsReps(
+                            w['details'] as String,
+                          );
+                          return GestureDetector(
+                            onTap: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => ExerciseDetailPage(
+                                  name: w['title'] as String,
+                                  imagePath: w['imagePath'] as String,
+                                  duration: w['time'] as String,
+                                  sets: sets,
+                                  defaultReps: reps,
+                                ),
+                              ),
+                            ),
+                            child: WorkoutCard(
+                              title: w['title'] as String,
+                              details: w['details'] as String,
+                              time: w['time'] as String,
+                              icon: w['icon'] as IconData,
+                              iconColor: Color(w['color'] as int),
+                            ),
+                          );
+                        },
                       ),
-                      child: WorkoutCard(
-                        title: w['title'] as String,
-                        details: w['details'] as String,
-                        time: w['time'] as String,
-                        icon: w['icon'] as IconData,
-                        iconColor: Color(w['color'] as int),
-                      ),
-                    );
-                  },
-                ),
               ),
             ],
           ),
