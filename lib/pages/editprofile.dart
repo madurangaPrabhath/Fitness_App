@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:fitness_app/services/database.dart';
+import 'package:fitness_app/services/shared_pref.dart';
 
 class EditProfilePage extends StatefulWidget {
   const EditProfilePage({super.key});
@@ -9,18 +12,208 @@ class EditProfilePage extends StatefulWidget {
 
 class _EditProfilePageState extends State<EditProfilePage> {
   final _formKey = GlobalKey<FormState>();
-  final _nameController = TextEditingController(text: 'John Doe');
-  final _emailController = TextEditingController(text: 'johndoe@email.com');
-  final _phoneController = TextEditingController(text: '+1 234 567 8900');
-  final _bioController = TextEditingController(
-    text: 'Fitness enthusiast on a journey to better health!',
-  );
+  final _nameController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _phoneController = TextEditingController();
+  final _bioController = TextEditingController();
 
   String _selectedGender = 'Male';
   DateTime _selectedDate = DateTime(1995, 6, 15);
 
   double _heightCm = 175;
   double _weightKg = 72;
+
+  bool _isLoading = true;
+  bool _isSaving = false;
+  String? _uid;
+
+  final _db = DatabaseMethods();
+  final _prefs = SharedPreferenceMethods();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProfile();
+  }
+
+  Future<void> _loadProfile() async {
+    try {
+      _uid = await _prefs.getUid();
+      _uid ??= FirebaseAuth.instance.currentUser?.uid;
+
+      final name = await _prefs.getName() ?? '';
+      final email = await _prefs.getEmail() ?? '';
+      final phone = await _prefs.getPhone() ?? '';
+      final bio = await _prefs.getBio() ?? '';
+      final gender = await _prefs.getGender() ?? 'Male';
+      final dobStr = await _prefs.getDob();
+      final height = await _prefs.getHeightCm();
+      final weight = await _prefs.getWeightKg();
+
+      DateTime dob = DateTime(1995, 6, 15);
+      if (dobStr != null && dobStr.isNotEmpty) {
+        try {
+          dob = DateTime.parse(dobStr);
+        } catch (_) {}
+      }
+
+      if (mounted) {
+        setState(() {
+          _nameController.text = name;
+          _emailController.text = email;
+          _phoneController.text = phone;
+          _bioController.text = bio;
+          _selectedGender = ['Male', 'Female', 'Other'].contains(gender)
+              ? gender
+              : 'Male';
+          _selectedDate = dob;
+          _heightCm = height;
+          _weightKg = weight;
+        });
+      }
+
+      if (_uid != null) {
+        try {
+          final doc = await _db.getUser(_uid!);
+          if (doc.exists && mounted) {
+            final data = doc.data() as Map<String, dynamic>;
+            final fsGender = (data['gender'] as String?) ?? gender;
+            DateTime fsDob = dob;
+            final fsDobStr = data['dob'] as String?;
+            if (fsDobStr != null && fsDobStr.isNotEmpty) {
+              try {
+                fsDob = DateTime.parse(fsDobStr);
+              } catch (_) {}
+            }
+            setState(() {
+              _nameController.text = (data['name'] as String?) ?? name;
+              _emailController.text = (data['email'] as String?) ?? email;
+              _phoneController.text = (data['phone'] as String?) ?? phone;
+              _bioController.text = (data['bio'] as String?) ?? bio;
+              _selectedGender = ['Male', 'Female', 'Other'].contains(fsGender)
+                  ? fsGender
+                  : 'Male';
+              _selectedDate = fsDob;
+              _heightCm = (data['heightCm'] as num?)?.toDouble() ?? height;
+              _weightKg = (data['weightKg'] as num?)?.toDouble() ?? weight;
+            });
+          }
+        } catch (_) {
+        }
+      }
+    } catch (_) {
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _saveProfile() async {
+    if (!_formKey.currentState!.validate()) return;
+    setState(() => _isSaving = true);
+
+    final uid = _uid ?? FirebaseAuth.instance.currentUser?.uid;
+    final name = _nameController.text.trim();
+    final email = _emailController.text.trim();
+    final phone = _phoneController.text.trim();
+    final bio = _bioController.text.trim();
+    final dobStr = _selectedDate.toIso8601String();
+
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        if (user.displayName != name) {
+          try {
+            await user.updateDisplayName(name);
+          } catch (_) {}
+        }
+        if (user.email != email) {
+          try {
+            await user.verifyBeforeUpdateEmail(email);
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: const Text(
+                    'A verification link has been sent to your new email.',
+                  ),
+                  backgroundColor: Colors.orange,
+                  behavior: SnackBarBehavior.floating,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              );
+            }
+          } on FirebaseAuthException catch (e) {
+            if (e.code == 'requires-recent-login' && mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: const Text(
+                    'Please sign in again to update your email.',
+                  ),
+                  backgroundColor: Colors.orange,
+                  behavior: SnackBarBehavior.floating,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              );
+            }
+          }
+        }
+      }
+
+      if (uid != null) {
+        await _db.updateUser(uid, {
+          'name': name,
+          'email': email,
+          'phone': phone,
+          'bio': bio,
+          'gender': _selectedGender,
+          'dob': dobStr,
+          'heightCm': _heightCm,
+          'weightKg': _weightKg,
+        });
+      }
+
+      await _prefs.saveProfile(
+        name: name,
+        email: email,
+        phone: phone,
+        bio: bio,
+        gender: _selectedGender,
+        dob: dobStr,
+        heightCm: _heightCm,
+        weightKg: _weightKg,
+      );
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Profile updated successfully!'),
+          backgroundColor: Colors.deepPurple,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+      );
+      Navigator.pop(context);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to save: ${e.toString()}'),
+          backgroundColor: Colors.redAccent,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
+    }
+  }
 
   @override
   void dispose() {
@@ -35,6 +228,14 @@ class _EditProfilePageState extends State<EditProfilePage> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final cardColor = Theme.of(context).cardColor;
+
+    if (_isLoading) {
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(color: Colors.deepPurple),
+        ),
+      );
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -218,21 +419,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                 width: double.infinity,
                 height: 52,
                 child: ElevatedButton(
-                  onPressed: () {
-                    if (_formKey.currentState!.validate()) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: const Text('Profile updated successfully!'),
-                          backgroundColor: Colors.deepPurple,
-                          behavior: SnackBarBehavior.floating,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                      );
-                      Navigator.pop(context);
-                    }
-                  },
+                  onPressed: _isSaving ? null : _saveProfile,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.deepPurple,
                     foregroundColor: Colors.white,
@@ -241,10 +428,22 @@ class _EditProfilePageState extends State<EditProfilePage> {
                     ),
                     elevation: 2,
                   ),
-                  child: const Text(
-                    'Save Changes',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                  ),
+                  child: _isSaving
+                      ? const SizedBox(
+                          width: 22,
+                          height: 22,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2.5,
+                          ),
+                        )
+                      : const Text(
+                          'Save Changes',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                 ),
               ),
 
