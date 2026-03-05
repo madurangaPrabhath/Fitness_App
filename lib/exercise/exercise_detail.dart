@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:math' as math;
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class ExerciseDetailPage extends StatefulWidget {
@@ -132,11 +131,7 @@ class _ExerciseDetailPageState extends State<ExerciseDetailPage>
         margin: const EdgeInsets.fromLTRB(20, 0, 20, 16),
         content: const Row(
           children: [
-            Icon(
-              CupertinoIcons.checkmark_seal_fill,
-              color: Colors.white,
-              size: 18,
-            ),
+            Icon(Icons.check_circle, color: Colors.white, size: 18),
             SizedBox(width: 8),
             Text(
               'Set complete! Great work 💪',
@@ -169,7 +164,7 @@ class _ExerciseDetailPageState extends State<ExerciseDetailPage>
                 exerciseName: widget.name,
               ),
               Padding(
-                padding: const EdgeInsets.fromLTRB(20, 22, 20, 0),
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -179,7 +174,7 @@ class _ExerciseDetailPageState extends State<ExerciseDetailPage>
                           widget.description ??
                           _defaultDescription(widget.name),
                     ),
-                    const SizedBox(height: 22),
+                    const SizedBox(height: 16),
                     _TimerCard(
                       progress: _progress,
                       displayTime: _displayTime,
@@ -252,82 +247,108 @@ class _HeroImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        ClipRRect(
-          borderRadius: const BorderRadius.vertical(
-            bottom: Radius.circular(28),
-          ),
-          child: SizedBox(
-            height: 300,
-            width: double.infinity,
-            child: Image.asset(
+    final topPadding = MediaQuery.of(context).padding.top;
+    final imageHeight = (MediaQuery.of(context).size.height * 0.28).clamp(
+      180.0,
+      260.0,
+    );
+
+    return ClipRRect(
+      borderRadius: const BorderRadius.vertical(bottom: Radius.circular(28)),
+      child: SizedBox(
+        height: imageHeight,
+        width: double.infinity,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            Image.asset(
               imagePath,
               fit: BoxFit.cover,
               errorBuilder: (_, _, _) => Container(
                 color: const Color(0xFFEEECFF),
                 child: const Center(
                   child: Icon(
-                    CupertinoIcons.flame,
+                    Icons.fitness_center,
                     size: 64,
                     color: Color(0xFF6C63FF),
                   ),
                 ),
               ),
             ),
-          ),
-        ),
-        Positioned(
-          bottom: 0,
-          left: 0,
-          right: 0,
-          child: ClipRRect(
-            borderRadius: const BorderRadius.vertical(
-              bottom: Radius.circular(28),
+
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              height: imageHeight * 0.5,
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.bottomCenter,
+                    end: Alignment.topCenter,
+                    colors: [
+                      Colors.black.withValues(alpha: 0.60),
+                      Colors.transparent,
+                    ],
+                  ),
+                ),
+              ),
             ),
-            child: Container(
-              height: 110,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.bottomCenter,
-                  end: Alignment.topCenter,
-                  colors: [
-                    Colors.black.withValues(alpha: 0.45),
-                    Colors.transparent,
+
+            Positioned(
+              bottom: 16,
+              left: 16,
+              right: 60,
+              child: Text(
+                exerciseName,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -0.3,
+                  shadows: [
+                    Shadow(
+                      color: Colors.black38,
+                      blurRadius: 6,
+                      offset: Offset(0, 2),
+                    ),
                   ],
                 ),
               ),
             ),
-          ),
-        ),
-        Positioned(
-          top: MediaQuery.of(context).padding.top + 12,
-          left: 16,
-          child: GestureDetector(
-            onTap: () => Navigator.of(context).maybePop(),
-            child: Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.88),
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.12),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
+
+            Positioned(
+              top: topPadding + 10,
+              left: 16,
+              child: GestureDetector(
+                onTap: () => Navigator.of(context).maybePop(),
+                child: Container(
+                  width: 38,
+                  height: 38,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.88),
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.12),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-              child: const Icon(
-                CupertinoIcons.chevron_left,
-                color: Color(0xFF6C63FF),
-                size: 20,
+                  child: const Icon(
+                    Icons.arrow_back_ios_new,
+                    color: Color(0xFF6C63FF),
+                    size: 18,
+                  ),
+                ),
               ),
             ),
-          ),
+          ],
         ),
-      ],
+      ),
     );
   }
 }
@@ -439,11 +460,7 @@ class _TimerCard extends StatelessWidget {
                   child: const Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(
-                        CupertinoIcons.arrow_counterclockwise,
-                        size: 13,
-                        color: _orange,
-                      ),
+                      Icon(Icons.replay, size: 13, color: _orange),
                       SizedBox(width: 4),
                       Text(
                         'Reset',
@@ -459,12 +476,12 @@ class _TimerCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 28),
+          const SizedBox(height: 16),
           GestureDetector(
             onTap: onToggle,
             child: SizedBox(
-              width: 148,
-              height: 148,
+              width: 120,
+              height: 120,
               child: AnimatedBuilder(
                 animation: ringController,
                 builder: (_, _) {
@@ -477,19 +494,17 @@ class _TimerCard extends StatelessWidget {
                           AnimatedSwitcher(
                             duration: const Duration(milliseconds: 200),
                             child: Icon(
-                              isRunning
-                                  ? CupertinoIcons.pause_fill
-                                  : CupertinoIcons.play_fill,
+                              isRunning ? Icons.pause : Icons.play_arrow,
                               key: ValueKey(isRunning),
                               color: _orange,
-                              size: 30,
+                              size: 24,
                             ),
                           ),
-                          const SizedBox(height: 6),
+                          const SizedBox(height: 4),
                           Text(
                             displayTime,
                             style: TextStyle(
-                              fontSize: 22,
+                              fontSize: 18,
                               fontWeight: FontWeight.w800,
                               color: isDark
                                   ? Colors.white
@@ -505,7 +520,7 @@ class _TimerCard extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 10),
           Text(
             isRunning ? 'Tap to pause' : 'Tap to start',
             style: TextStyle(
@@ -611,8 +626,8 @@ class _SetsCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _StatLabel(label: 'Total Sets', icon: CupertinoIcons.layers_alt),
-          const SizedBox(height: 14),
+          _StatLabel(label: 'Total Sets', icon: Icons.layers),
+          const SizedBox(height: 10),
           Row(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
@@ -676,16 +691,13 @@ class _RepsCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _StatLabel(
-            label: 'Repetition Count',
-            icon: CupertinoIcons.arrow_2_circlepath,
-          ),
-          const SizedBox(height: 14),
+          _StatLabel(label: 'Repetition Count', icon: Icons.repeat),
+          const SizedBox(height: 10),
           Center(
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                _CounterButton(icon: CupertinoIcons.minus, onTap: onDecrement),
+                _CounterButton(icon: Icons.remove, onTap: onDecrement),
                 SizedBox(
                   width: 52,
                   child: Center(
@@ -703,7 +715,7 @@ class _RepsCard extends StatelessWidget {
                   ),
                 ),
                 _CounterButton(
-                  icon: CupertinoIcons.plus,
+                  icon: Icons.add,
                   onTap: onIncrement,
                   filled: true,
                 ),

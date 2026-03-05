@@ -7,12 +7,16 @@ class _ArmExercise {
   final String sets;
   final String time;
   final String imagePath;
+  final IconData icon;
+  final Color iconColor;
 
   const _ArmExercise({
     required this.name,
     required this.sets,
     required this.time,
     required this.imagePath,
+    required this.icon,
+    required this.iconColor,
   });
 }
 
@@ -22,36 +26,48 @@ const List<_ArmExercise> _exercises = [
     sets: '3 sets | 12 repetition',
     time: '10:00',
     imagePath: 'images/fit1.png',
+    icon: Icons.fitness_center,
+    iconColor: Color(0xFF2979FF),
   ),
   _ArmExercise(
     name: 'Tricep Dips',
     sets: '3 sets | 15 repetition',
     time: '08:00',
     imagePath: 'images/fit2.png',
+    icon: Icons.sports_gymnastics,
+    iconColor: Color(0xFF7C4DFF),
   ),
   _ArmExercise(
     name: 'Shoulder Press',
     sets: '3 sets | 12 repetition',
     time: '10:00',
     imagePath: 'images/shoulder-stretch.jpg',
+    icon: Icons.accessibility_new,
+    iconColor: Color(0xFF00BFA5),
   ),
   _ArmExercise(
     name: 'Lateral Raises',
     sets: '3 sets | 15 repetition',
     time: '08:00',
     imagePath: 'images/fit3.png',
+    icon: Icons.sports_handball,
+    iconColor: Color(0xFFFF6D00),
   ),
   _ArmExercise(
     name: 'Push-Ups',
     sets: '3 sets | 15 repetition',
     time: '09:00',
     imagePath: 'images/girl.jpg',
+    icon: Icons.sports_gymnastics,
+    iconColor: Color(0xFFE91E63),
   ),
   _ArmExercise(
     name: 'Hammer Curls',
     sets: '3 sets | 12 repetition',
     time: '07:00',
     imagePath: 'images/fit1.png',
+    icon: Icons.fitness_center,
+    iconColor: Color(0xFF00C853),
   ),
 ];
 
@@ -112,7 +128,7 @@ class _TopNavBar extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               onPressed: () => Navigator.of(context).maybePop(),
               child: const Icon(
-                CupertinoIcons.chevron_left,
+                Icons.arrow_back_ios_new,
                 color: Color(0xFF2979FF),
                 size: 22,
               ),
@@ -214,7 +230,10 @@ class _ExerciseCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 14),
-              _ExerciseThumbnail(imagePath: exercise.imagePath),
+              _ExerciseThumbnail(
+                icon: exercise.icon,
+                iconColor: exercise.iconColor,
+              ),
             ],
           ),
         ),
@@ -240,11 +259,7 @@ class _TimeBadge extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(
-            CupertinoIcons.bolt_fill,
-            size: 13,
-            color: Color(0xFF2979FF),
-          ),
+          const Icon(Icons.fitness_center, size: 13, color: Color(0xFF2979FF)),
           const SizedBox(width: 5),
           Text(
             time,
@@ -262,35 +277,21 @@ class _TimeBadge extends StatelessWidget {
 }
 
 class _ExerciseThumbnail extends StatelessWidget {
-  final String imagePath;
+  final IconData icon;
+  final Color iconColor;
 
-  const _ExerciseThumbnail({required this.imagePath});
+  const _ExerciseThumbnail({required this.icon, required this.iconColor});
 
   @override
   Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(12),
-      child: Image.asset(
-        imagePath,
-        width: 90,
-        height: 90,
-        fit: BoxFit.cover,
-        errorBuilder: (_, _, _) => Container(
-          width: 90,
-          height: 90,
-          decoration: BoxDecoration(
-            color: Theme.of(context).brightness == Brightness.dark
-                ? const Color(0xFF1A2E5A)
-                : const Color(0xFFE8F0FF),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: const Icon(
-            CupertinoIcons.bolt_fill,
-            color: Color(0xFF2979FF),
-            size: 32,
-          ),
-        ),
+    return Container(
+      width: 72,
+      height: 72,
+      decoration: BoxDecoration(
+        color: iconColor.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(16),
       ),
+      child: Icon(icon, color: iconColor, size: 32),
     );
   }
 }
