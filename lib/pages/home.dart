@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:fitness_app/services/support_widget.dart';
+import 'package:fitness_app/exercise/cardio_page.dart';
+import 'package:fitness_app/exercise/arm_page.dart';
+import 'package:fitness_app/exercise/stretching_page.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -154,25 +158,44 @@ class HomePage extends StatelessWidget {
                   child: ListView(
                     scrollDirection: Axis.horizontal,
                     children: [
-                      CategoryCard(
-                        title: 'Cardio',
-                        subtitle: '6 Exercises\n100 Minutes',
-                        color: Colors.orange,
-                        image: 'images/fit1.png',
+                      GestureDetector(
+                        onTap: () => Navigator.of(context).push(
+                          CupertinoPageRoute(
+                            builder: (_) => const CardioPage(),
+                          ),
+                        ),
+                        child: CategoryCard(
+                          title: 'Cardio',
+                          subtitle: '6 Exercises\n100 Minutes',
+                          color: Colors.orange,
+                          image: 'images/fit1.png',
+                        ),
                       ),
                       const SizedBox(width: 15),
-                      CategoryCard(
-                        title: 'Arm',
-                        subtitle: '6 Exercises\n100 Minutes',
-                        color: Colors.teal,
-                        image: 'images/fit2.png',
+                      GestureDetector(
+                        onTap: () => Navigator.of(context).push(
+                          CupertinoPageRoute(builder: (_) => const ArmPage()),
+                        ),
+                        child: CategoryCard(
+                          title: 'Arm',
+                          subtitle: '6 Exercises\n100 Minutes',
+                          color: Colors.teal,
+                          image: 'images/fit2.png',
+                        ),
                       ),
                       const SizedBox(width: 15),
-                      CategoryCard(
-                        title: 'Stretching',
-                        subtitle: '8 Exercises\n120 Minutes',
-                        color: Colors.blue,
-                        image: 'images/fit3.png',
+                      GestureDetector(
+                        onTap: () => Navigator.of(context).push(
+                          CupertinoPageRoute(
+                            builder: (_) => const StretchingPage(),
+                          ),
+                        ),
+                        child: CategoryCard(
+                          title: 'Stretching',
+                          subtitle: '8 Exercises\n120 Minutes',
+                          color: Colors.blue,
+                          image: 'images/fit3.png',
+                        ),
                       ),
                     ],
                   ),
