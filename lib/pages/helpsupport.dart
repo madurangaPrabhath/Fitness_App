@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:fitness_app/services/database.dart';
 
 class HelpSupportPage extends StatefulWidget {
   const HelpSupportPage({super.key});
@@ -9,7 +12,10 @@ class HelpSupportPage extends StatefulWidget {
 
 class _HelpSupportPageState extends State<HelpSupportPage> {
   final _searchController = TextEditingController();
+  final _db = DatabaseMethods();
   String _searchQuery = '';
+
+  static const String _supportEmail = 'support@fitlife.app';
 
   static const List<_FaqCategory> _faqCategories = [
     _FaqCategory(
@@ -244,10 +250,10 @@ class _HelpSupportPageState extends State<HelpSupportPage> {
             _buildContactTile(
               icon: Icons.email_outlined,
               title: 'Email Us',
-              subtitle: 'support@fitlife.app',
+              subtitle: _supportEmail,
               color: const Color(0xFF7C4DFF),
               isDark: isDark,
-              onTap: () => _showSnackBar('Opening email client...'),
+              onTap: () => _showEmailSheet(context),
             ),
             const SizedBox(height: 10),
             _buildContactTile(
@@ -441,8 +447,11 @@ class _HelpSupportPageState extends State<HelpSupportPage> {
     );
   }
 
-  void _showReportBugSheet(BuildContext context) {
-    final bugController = TextEditingController();
+  void _showEmailSheet(BuildContext context) {
+    final subjectController = TextEditingController();
+    final messageController = TextEditingController();
+    bool isSubmitting = false;
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -451,81 +460,300 @@ class _HelpSupportPageState extends State<HelpSupportPage> {
       ),
       builder: (ctx) {
         final isDark = Theme.of(ctx).brightness == Brightness.dark;
-        return Padding(
-          padding: EdgeInsets.only(
-            left: 24,
-            right: 24,
-            top: 20,
-            bottom: MediaQuery.of(ctx).viewInsets.bottom + 24,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade400,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-              const SizedBox(height: 20),
-              const Text(
-                'Report a Bug',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 6),
-              Text(
-                'Describe the issue you encountered',
-                style: TextStyle(fontSize: 13, color: Colors.grey.shade500),
-              ),
-              const SizedBox(height: 18),
-              TextFormField(
-                controller: bugController,
-                maxLines: 5,
-                decoration: InputDecoration(
-                  hintText: 'What went wrong?',
-                  filled: true,
-                  fillColor: isDark
-                      ? const Color(0xff2a2a3d)
-                      : Colors.grey.shade100,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14),
-                    borderSide: BorderSide.none,
+        return StatefulBuilder(
+          builder: (ctx, setSheetState) => Padding(
+            padding: EdgeInsets.only(
+              left: 24,
+              right: 24,
+              top: 20,
+              bottom: MediaQuery.of(ctx).viewInsets.bottom + 24,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade400,
+                    borderRadius: BorderRadius.circular(2),
                   ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14),
-                    borderSide: const BorderSide(
-                      color: Colors.deepPurple,
-                      width: 1.5,
-                    ),
-                  ),
-                  contentPadding: const EdgeInsets.all(16),
                 ),
-              ),
-              const SizedBox(height: 16),
-              SizedBox(
-                width: double.infinity,
-                height: 48,
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(ctx);
-                    _showSnackBar('Bug report submitted. Thank you!');
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.deepPurple,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
+                const SizedBox(height: 20),
+                const Text(
+                  'Contact Support',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  _supportEmail,
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Colors.deepPurple.shade300,
+                  ),
+                ),
+                const SizedBox(height: 18),
+                TextFormField(
+                  controller: subjectController,
+                  decoration: InputDecoration(
+                    hintText: 'Subject',
+                    filled: true,
+                    fillColor: isDark
+                        ? const Color(0xff2a2a3d)
+                        : Colors.grey.shade100,
+                    border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(14),
+                      borderSide: BorderSide.none,
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: const BorderSide(
+                        color: Colors.deepPurple,
+                        width: 1.5,
+                      ),
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                      vertical: 14,
+                      horizontal: 16,
                     ),
                   ),
-                  child: const Text(
-                    'Submit Report',
-                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                ),
+                const SizedBox(height: 10),
+                TextFormField(
+                  controller: messageController,
+                  maxLines: 4,
+                  decoration: InputDecoration(
+                    hintText: 'How can we help you?',
+                    filled: true,
+                    fillColor: isDark
+                        ? const Color(0xff2a2a3d)
+                        : Colors.grey.shade100,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: BorderSide.none,
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: const BorderSide(
+                        color: Colors.deepPurple,
+                        width: 1.5,
+                      ),
+                    ),
+                    contentPadding: const EdgeInsets.all(16),
                   ),
                 ),
-              ),
-            ],
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  height: 48,
+                  child: ElevatedButton(
+                    onPressed: isSubmitting
+                        ? null
+                        : () async {
+                            final subject = subjectController.text.trim();
+                            final message = messageController.text.trim();
+                            if (subject.isEmpty || message.isEmpty) {
+                              _showSnackBar(
+                                'Please fill in both subject and message',
+                              );
+                              return;
+                            }
+                            setSheetState(() => isSubmitting = true);
+                            try {
+                              final uid =
+                                  FirebaseAuth.instance.currentUser?.uid;
+                              await _db.addSupportRequest({
+                                'type': 'email',
+                                'subject': subject,
+                                'message': message,
+                                'uid': uid,
+                                'userEmail':
+                                    FirebaseAuth.instance.currentUser?.email ??
+                                    '',
+                              });
+                              final mailUri = Uri(
+                                scheme: 'mailto',
+                                path: _supportEmail,
+                                queryParameters: {
+                                  'subject': subject,
+                                  'body': message,
+                                },
+                              );
+                              if (await canLaunchUrl(mailUri)) {
+                                await launchUrl(mailUri);
+                              }
+                              if (ctx.mounted) Navigator.pop(ctx);
+                              _showSnackBar(
+                                'Message sent! We\'ll get back to you soon.',
+                              );
+                            } catch (_) {
+                              setSheetState(() => isSubmitting = false);
+                              _showSnackBar(
+                                'Failed to send. Please try again.',
+                              );
+                            }
+                          },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.deepPurple,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                    ),
+                    child: isSubmitting
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                        : const Text(
+                            'Send Message',
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _showReportBugSheet(BuildContext context) {
+    final bugController = TextEditingController();
+    bool isSubmitting = false;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) {
+        final isDark = Theme.of(ctx).brightness == Brightness.dark;
+        return StatefulBuilder(
+          builder: (ctx, setSheetState) => Padding(
+            padding: EdgeInsets.only(
+              left: 24,
+              right: 24,
+              top: 20,
+              bottom: MediaQuery.of(ctx).viewInsets.bottom + 24,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade400,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                const Text(
+                  'Report a Bug',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'Describe the issue you encountered',
+                  style: TextStyle(fontSize: 13, color: Colors.grey.shade500),
+                ),
+                const SizedBox(height: 18),
+                TextFormField(
+                  controller: bugController,
+                  maxLines: 5,
+                  decoration: InputDecoration(
+                    hintText: 'What went wrong?',
+                    filled: true,
+                    fillColor: isDark
+                        ? const Color(0xff2a2a3d)
+                        : Colors.grey.shade100,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: BorderSide.none,
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: const BorderSide(
+                        color: Colors.deepPurple,
+                        width: 1.5,
+                      ),
+                    ),
+                    contentPadding: const EdgeInsets.all(16),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  height: 48,
+                  child: ElevatedButton(
+                    onPressed: isSubmitting
+                        ? null
+                        : () async {
+                            final description = bugController.text.trim();
+                            if (description.isEmpty) {
+                              _showSnackBar(
+                                'Please describe the issue before submitting',
+                              );
+                              return;
+                            }
+                            setSheetState(() => isSubmitting = true);
+                            try {
+                              final uid =
+                                  FirebaseAuth.instance.currentUser?.uid;
+                              await _db.addSupportRequest({
+                                'type': 'bug',
+                                'description': description,
+                                'uid': uid,
+                                'userEmail':
+                                    FirebaseAuth.instance.currentUser?.email ??
+                                    '',
+                              });
+                              if (ctx.mounted) Navigator.pop(ctx);
+                              _showSnackBar('Bug report submitted. Thank you!');
+                            } catch (_) {
+                              setSheetState(() => isSubmitting = false);
+                              _showSnackBar(
+                                'Failed to submit. Please try again.',
+                              );
+                            }
+                          },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.deepPurple,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                    ),
+                    child: isSubmitting
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                        : const Text(
+                            'Submit Report',
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                  ),
+                ),
+              ],
+            ),
           ),
         );
       },
