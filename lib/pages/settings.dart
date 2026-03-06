@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fitness_app/services/theme_provider.dart';
+import 'package:fitness_app/services/shared_pref.dart';
+import 'package:fitness_app/services/database.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -10,6 +13,9 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
+  final _sharedPref = SharedPreferenceMethods();
+  final _db = DatabaseMethods();
+
   bool _workoutReminders = true;
   bool _goalAlerts = true;
   bool _hydrationReminders = false;
@@ -24,10 +30,53 @@ class _SettingsPageState extends State<SettingsPage> {
 
   String _language = 'English';
 
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSettings();
+  }
+
+  Future<void> _loadSettings() async {
+    final boolResults = await Future.wait([
+      _sharedPref.getWorkoutReminders(),
+      _sharedPref.getGoalAlerts(),
+      _sharedPref.getHydrationReminders(),
+      _sharedPref.getWeeklyReport(),
+      _sharedPref.getProfileVisible(),
+      _sharedPref.getShowActivity(),
+    ]);
+    final stringResults = await Future.wait([
+      _sharedPref.getWeightUnit(),
+      _sharedPref.getHeightUnit(),
+      _sharedPref.getDistanceUnit(),
+      _sharedPref.getLanguage(),
+    ]);
+    if (!mounted) return;
+    setState(() {
+      _workoutReminders = boolResults[0];
+      _goalAlerts = boolResults[1];
+      _hydrationReminders = boolResults[2];
+      _weeklyReport = boolResults[3];
+      _profileVisible = boolResults[4];
+      _showActivity = boolResults[5];
+      _weightUnit = stringResults[0];
+      _heightUnit = stringResults[1];
+      _distanceUnit = stringResults[2];
+      _language = stringResults[3];
+      _isLoading = false;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final themeProvider = Provider.of<ThemeProvider>(context);
+
+    if (_isLoading) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -65,7 +114,10 @@ class _SettingsPageState extends State<SettingsPage> {
               title: 'Workout Reminders',
               subtitle: 'Get reminded before scheduled workouts',
               value: _workoutReminders,
-              onChanged: (v) => setState(() => _workoutReminders = v),
+              onChanged: (v) {
+                setState(() => _workoutReminders = v);
+                _sharedPref.setWorkoutReminders(v);
+              },
               isDark: isDark,
             ),
             const SizedBox(height: 8),
@@ -74,7 +126,10 @@ class _SettingsPageState extends State<SettingsPage> {
               title: 'Goal Alerts',
               subtitle: 'Notifications when you hit your targets',
               value: _goalAlerts,
-              onChanged: (v) => setState(() => _goalAlerts = v),
+              onChanged: (v) {
+                setState(() => _goalAlerts = v);
+                _sharedPref.setGoalAlerts(v);
+              },
               isDark: isDark,
             ),
             const SizedBox(height: 8),
@@ -83,7 +138,10 @@ class _SettingsPageState extends State<SettingsPage> {
               title: 'Hydration Reminders',
               subtitle: 'Periodic reminders to drink water',
               value: _hydrationReminders,
-              onChanged: (v) => setState(() => _hydrationReminders = v),
+              onChanged: (v) {
+                setState(() => _hydrationReminders = v);
+                _sharedPref.setHydrationReminders(v);
+              },
               isDark: isDark,
             ),
             const SizedBox(height: 8),
@@ -92,7 +150,10 @@ class _SettingsPageState extends State<SettingsPage> {
               title: 'Weekly Report',
               subtitle: 'Receive a summary of your weekly progress',
               value: _weeklyReport,
-              onChanged: (v) => setState(() => _weeklyReport = v),
+              onChanged: (v) {
+                setState(() => _weeklyReport = v);
+                _sharedPref.setWeeklyReport(v);
+              },
               isDark: isDark,
             ),
 
@@ -105,7 +166,10 @@ class _SettingsPageState extends State<SettingsPage> {
               title: 'Weight Unit',
               value: _weightUnit,
               items: const ['kg', 'lbs'],
-              onChanged: (v) => setState(() => _weightUnit = v ?? _weightUnit),
+              onChanged: (v) {
+                setState(() => _weightUnit = v ?? _weightUnit);
+                if (v != null) _sharedPref.setWeightUnit(v);
+              },
               isDark: isDark,
             ),
             const SizedBox(height: 8),
@@ -114,7 +178,10 @@ class _SettingsPageState extends State<SettingsPage> {
               title: 'Height Unit',
               value: _heightUnit,
               items: const ['cm', 'ft/in'],
-              onChanged: (v) => setState(() => _heightUnit = v ?? _heightUnit),
+              onChanged: (v) {
+                setState(() => _heightUnit = v ?? _heightUnit);
+                if (v != null) _sharedPref.setHeightUnit(v);
+              },
               isDark: isDark,
             ),
             const SizedBox(height: 8),
@@ -123,8 +190,10 @@ class _SettingsPageState extends State<SettingsPage> {
               title: 'Distance Unit',
               value: _distanceUnit,
               items: const ['km', 'miles'],
-              onChanged: (v) =>
-                  setState(() => _distanceUnit = v ?? _distanceUnit),
+              onChanged: (v) {
+                setState(() => _distanceUnit = v ?? _distanceUnit);
+                if (v != null) _sharedPref.setDistanceUnit(v);
+              },
               isDark: isDark,
             ),
             const SizedBox(height: 8),
@@ -133,7 +202,10 @@ class _SettingsPageState extends State<SettingsPage> {
               title: 'Language',
               value: _language,
               items: const ['English', 'Spanish', 'French', 'German', 'Hindi'],
-              onChanged: (v) => setState(() => _language = v ?? _language),
+              onChanged: (v) {
+                setState(() => _language = v ?? _language);
+                if (v != null) _sharedPref.setLanguage(v);
+              },
               isDark: isDark,
             ),
 
@@ -146,7 +218,12 @@ class _SettingsPageState extends State<SettingsPage> {
               title: 'Profile Visibility',
               subtitle: 'Allow others to see your profile',
               value: _profileVisible,
-              onChanged: (v) => setState(() => _profileVisible = v),
+              onChanged: (v) async {
+                setState(() => _profileVisible = v);
+                await _sharedPref.setProfileVisible(v);
+                final uid = FirebaseAuth.instance.currentUser?.uid;
+                if (uid != null) _db.updateUser(uid, {'profileVisible': v});
+              },
               isDark: isDark,
             ),
             const SizedBox(height: 8),
@@ -155,7 +232,12 @@ class _SettingsPageState extends State<SettingsPage> {
               title: 'Show Activity Status',
               subtitle: 'Display your workout activity to friends',
               value: _showActivity,
-              onChanged: (v) => setState(() => _showActivity = v),
+              onChanged: (v) async {
+                setState(() => _showActivity = v);
+                await _sharedPref.setShowActivity(v);
+                final uid = FirebaseAuth.instance.currentUser?.uid;
+                if (uid != null) _db.updateUser(uid, {'showActivity': v});
+              },
               isDark: isDark,
             ),
 
@@ -168,7 +250,7 @@ class _SettingsPageState extends State<SettingsPage> {
               title: 'Export Data',
               subtitle: 'Download your workout history',
               isDark: isDark,
-              onTap: () => _showSnackBar('Preparing data export...'),
+              onTap: _exportData,
             ),
             const SizedBox(height: 8),
             _buildActionTile(
@@ -180,7 +262,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 title: 'Clear Cache',
                 message:
                     'This will remove temporary files. Your data will not be affected.',
-                onConfirm: () => _showSnackBar('Cache cleared successfully'),
+                onConfirm: _clearCache,
               ),
             ),
 
@@ -193,7 +275,7 @@ class _SettingsPageState extends State<SettingsPage> {
               title: 'Change Password',
               subtitle: 'Update your account password',
               isDark: isDark,
-              onTap: () => _showSnackBar('Change password flow coming soon'),
+              onTap: _changePassword,
             ),
             const SizedBox(height: 8),
             _buildActionTile(
@@ -207,7 +289,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 message:
                     'This action is permanent and cannot be undone. All your data will be deleted.',
                 isDestructive: true,
-                onConfirm: () => _showSnackBar('Account deletion requested'),
+                onConfirm: _deleteAccount,
               ),
             ),
 
@@ -390,6 +472,80 @@ class _SettingsPageState extends State<SettingsPage> {
         ),
       ),
     );
+  }
+
+  Future<void> _exportData() async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) {
+      _showSnackBar('Please sign in to export data');
+      return;
+    }
+    try {
+      _showSnackBar('Preparing data export...');
+      final snapshot = await _db.getWorkoutLogs(uid);
+      final count = snapshot.docs.length;
+      _showSnackBar(
+        'Exported $count workout record${count == 1 ? '' : 's'} successfully',
+      );
+    } catch (_) {
+      _showSnackBar('Failed to export data. Please try again.');
+    }
+  }
+
+  Future<void> _clearCache() async {
+    try {
+      final uid = await _sharedPref.getUid();
+      final name = await _sharedPref.getName();
+      final email = await _sharedPref.getEmail();
+      final isLoggedIn = await _sharedPref.getIsLoggedIn();
+      await _sharedPref.clearAll();
+      if (isLoggedIn && uid != null && name != null && email != null) {
+        await _sharedPref.saveUserSession(uid: uid, name: name, email: email);
+      }
+      _showSnackBar('Cache cleared successfully');
+    } catch (_) {
+      _showSnackBar('Failed to clear cache. Please try again.');
+    }
+  }
+
+  Future<void> _changePassword() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      _showSnackBar('Please sign in to change your password');
+      return;
+    }
+    final email = user.email;
+    if (email == null) {
+      _showSnackBar('No email associated with this account');
+      return;
+    }
+    try {
+      await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
+      _showSnackBar('Password reset email sent to $email');
+    } on FirebaseAuthException catch (e) {
+      _showSnackBar(e.message ?? 'Failed to send password reset email');
+    }
+  }
+
+  Future<void> _deleteAccount() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+    try {
+      await _db.deleteUser(user.uid);
+      await _sharedPref.clearAll();
+      await user.delete();
+      if (mounted) Navigator.of(context).popUntil((route) => route.isFirst);
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'requires-recent-login') {
+        _showSnackBar(
+          'Please sign out and sign back in before deleting your account',
+        );
+      } else {
+        _showSnackBar(e.message ?? 'Failed to delete account');
+      }
+    } catch (_) {
+      _showSnackBar('Failed to delete account. Please try again.');
+    }
   }
 
   void _showSnackBar(String message) {

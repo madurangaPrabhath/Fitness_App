@@ -121,17 +121,4 @@ class DatabaseMethods {
   Future<void> deleteNotification(String uid, String notifId) async {
     await _users.doc(uid).collection('notifications').doc(notifId).delete();
   }
-
-  Future<void> markAllNotificationsRead(String uid) async {
-    final batch = _db.batch();
-    final snapshot = await _users
-        .doc(uid)
-        .collection('notifications')
-        .where('isRead', isEqualTo: false)
-        .get();
-    for (final doc in snapshot.docs) {
-      batch.update(doc.reference, {'isRead': true});
-    }
-    await batch.commit();
-  }
 }
