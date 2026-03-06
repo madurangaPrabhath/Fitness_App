@@ -30,7 +30,21 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Future<void> _resolveUid() async {
-    final uid = FirebaseAuth.instance.currentUser?.uid ?? await _prefs.getUid();
+    String? uid = FirebaseAuth.instance.currentUser?.uid;
+
+    if (uid == null) {
+      try {
+        uid = await _prefs.getUid();
+      } catch (_) {}
+    }
+
+    if (uid == null) {
+      try {
+        final user = await FirebaseAuth.instance.authStateChanges().first;
+        uid = user?.uid;
+      } catch (_) {}
+    }
+
     if (mounted) setState(() => _uid = uid);
   }
 
@@ -59,6 +73,17 @@ class _ProfilePageState extends State<ProfilePage> {
         child: StreamBuilder<DocumentSnapshot>(
           stream: _db.userStream(_uid!),
           builder: (context, snapshot) {
+            if (snapshot.hasError) {
+              return const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(24),
+                  child: Text(
+                    'Failed to load profile. Check your connection.',
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              );
+            }
             final data = (snapshot.data?.data() as Map<String, dynamic>?) ?? {};
             final name = (data['name'] as String?)?.isNotEmpty == true
                 ? data['name'] as String

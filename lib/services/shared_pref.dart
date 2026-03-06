@@ -1,7 +1,6 @@
-import 'package:native_shared_preferences/native_shared_preferences.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SharedPreferenceMethods {
-
   static const String _keyUid = 'uid';
   static const String _keyName = 'name';
   static const String _keyEmail = 'email';
@@ -31,8 +30,7 @@ class SharedPreferenceMethods {
   static const String _keyDistanceUnit = 'distanceUnit';
   static const String _keyLanguage = 'language';
 
-  Future<NativeSharedPreferences> get _prefs =>
-      NativeSharedPreferences.getInstance();
+  Future<SharedPreferences> get _prefs => SharedPreferences.getInstance();
 
   Future<void> saveUserSession({
     required String uid,
