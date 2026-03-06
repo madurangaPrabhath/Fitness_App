@@ -34,18 +34,23 @@ class _ProfilePageState extends State<ProfilePage> {
 
     if (uid == null) {
       try {
-        uid = await _prefs.getUid();
-      } catch (_) {}
-    }
-
-    if (uid == null) {
-      try {
         final user = await FirebaseAuth.instance.authStateChanges().first;
         uid = user?.uid;
       } catch (_) {}
     }
 
-    if (mounted) setState(() => _uid = uid);
+    if (!mounted) return;
+
+    if (uid == null) {
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (_) => const SignInPage()),
+        (route) => false,
+      );
+      return;
+    }
+
+    setState(() => _uid = uid);
   }
 
   Future<void> _logout() async {
@@ -73,13 +78,40 @@ class _ProfilePageState extends State<ProfilePage> {
         child: StreamBuilder<DocumentSnapshot>(
           stream: _db.userStream(_uid!),
           builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting &&
+                !snapshot.hasData) {
+              return const Center(child: CircularProgressIndicator());
+            }
             if (snapshot.hasError) {
-              return const Center(
+              return Center(
                 child: Padding(
-                  padding: EdgeInsets.all(24),
-                  child: Text(
-                    'Failed to load profile. Check your connection.',
-                    textAlign: TextAlign.center,
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(
+                        Icons.cloud_off_outlined,
+                        size: 48,
+                        color: Colors.grey,
+                      ),
+                      const SizedBox(height: 12),
+                      const Text(
+                        'Failed to load profile.',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        snapshot.error.toString(),
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               );
