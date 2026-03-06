@@ -1,4 +1,8 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+
+import '../services/database.dart';
 
 class NotificationsPage extends StatefulWidget {
   const NotificationsPage({super.key});
@@ -8,131 +12,65 @@ class NotificationsPage extends StatefulWidget {
 }
 
 class _NotificationsPageState extends State<NotificationsPage> {
-  final List<_NotificationItem> _notifications = [
-    _NotificationItem(
-      icon: Icons.fitness_center,
-      color: const Color(0xFF7C4DFF),
-      title: 'Workout Complete!',
-      message: 'Great job finishing your upper body session. Keep it up!',
-      time: '2 min ago',
-      isUnread: true,
-      category: _NotifCategory.workout,
-    ),
-    _NotificationItem(
-      icon: Icons.local_fire_department,
-      color: const Color(0xFFFF6D00),
-      title: 'Calorie Goal Reached',
-      message: 'You\'ve burned 500 calories today. Amazing progress!',
-      time: '15 min ago',
-      isUnread: true,
-      category: _NotifCategory.achievement,
-    ),
-    _NotificationItem(
-      icon: Icons.emoji_events,
-      color: const Color(0xFFFFD600),
-      title: 'New Achievement Unlocked',
-      message: 'You completed 7 consecutive days of workouts!',
-      time: '1 hr ago',
-      isUnread: true,
-      category: _NotifCategory.achievement,
-    ),
-    _NotificationItem(
-      icon: Icons.schedule,
-      color: const Color(0xFF2979FF),
-      title: 'Workout Reminder',
-      message: 'Your leg day session starts in 30 minutes.',
-      time: '2 hrs ago',
-      isUnread: false,
-      category: _NotifCategory.reminder,
-    ),
-    _NotificationItem(
-      icon: Icons.trending_up,
-      color: const Color(0xFF00BFA5),
-      title: 'Weekly Progress',
-      message: 'You\'re 20% ahead of last week\'s activity. Keep going!',
-      time: '5 hrs ago',
-      isUnread: false,
-      category: _NotifCategory.progress,
-    ),
-    _NotificationItem(
-      icon: Icons.water_drop,
-      color: const Color(0xFF29B6F6),
-      title: 'Hydration Reminder',
-      message: 'Don\'t forget to drink water. Stay hydrated!',
-      time: '6 hrs ago',
-      isUnread: false,
-      category: _NotifCategory.reminder,
-    ),
-    _NotificationItem(
-      icon: Icons.directions_run,
-      color: const Color(0xFFE91E63),
-      title: 'New Workout Available',
-      message: 'Try the new HIIT Cardio Blast routine added today.',
-      time: 'Yesterday',
-      isUnread: false,
-      category: _NotifCategory.workout,
-    ),
-    _NotificationItem(
-      icon: Icons.star,
-      color: const Color(0xFFFF9800),
-      title: 'Personal Best!',
-      message: 'You set a new record on the plank — 2 min 30 sec!',
-      time: 'Yesterday',
-      isUnread: false,
-      category: _NotifCategory.achievement,
-    ),
-    _NotificationItem(
-      icon: Icons.nightlight_round,
-      color: const Color(0xFF7E57C2),
-      title: 'Rest Day Tomorrow',
-      message: 'Recovery is key. Take it easy and let your muscles heal.',
-      time: '2 days ago',
-      isUnread: false,
-      category: _NotifCategory.reminder,
-    ),
-  ];
-
+  final DatabaseMethods _db = DatabaseMethods();
   _NotifCategory _selectedFilter = _NotifCategory.all;
 
-  List<_NotificationItem> get _filteredNotifications {
-    if (_selectedFilter == _NotifCategory.all) return _notifications;
-    return _notifications.where((n) => n.category == _selectedFilter).toList();
+  String? get _uid => FirebaseAuth.instance.currentUser?.uid;
+
+  List<_NotificationItem> _mapDocs(List<QueryDocumentSnapshot> docs) {
+    return docs.map((doc) {
+      final data = doc.data() as Map<String, dynamic>;
+      final category = _NotifCategory.values.firstWhere(
+        (c) => c.name == (data['category'] as String? ?? ''),
+        orElse: () => _NotifCategory.all,
+      );
+      return _NotificationItem(
+        docId: doc.id,
+        icon: IconData(
+          data['iconCodePoint'] as int? ?? Icons.notifications.codePoint,
+          fontFamily: 'MaterialIcons',
+        ),
+        color: Color(data['colorValue'] as int? ?? 0xFF7C4DFF),
+        title: data['title'] as String? ?? '',
+        message: data['message'] as String? ?? '',
+        time: _formatTime(data['createdAt'] as Timestamp?),
+        isUnread: !(data['isRead'] as bool? ?? false),
+        category: category,
+      );
+    }).toList();
   }
 
-  int get _unreadCount => _notifications.where((n) => n.isUnread).length;
-
-  void _markAllRead() {
-    setState(() {
-      for (final n in _notifications) {
-        n.isUnread = false;
-      }
-    });
+  String _formatTime(Timestamp? ts) {
+    if (ts == null) return '';
+    final diff = DateTime.now().difference(ts.toDate());
+    if (diff.inMinutes < 1) return 'Just now';
+    if (diff.inMinutes < 60) return '${diff.inMinutes} min ago';
+    if (diff.inHours < 24) {
+      return '${diff.inHours} hr${diff.inHours > 1 ? 's' : ''} ago';
+    }
+    if (diff.inDays == 1) return 'Yesterday';
+    if (diff.inDays < 7) return '${diff.inDays} days ago';
+    final dt = ts.toDate();
+    return '${dt.day}/${dt.month}/${dt.year}';
   }
 
-  void _dismissNotification(int index) {
-    final filtered = _filteredNotifications;
-    final item = filtered[index];
-    setState(() {
-      _notifications.remove(item);
-    });
+  Future<void> _markAllRead() async {
+    final uid = _uid;
+    if (uid == null) return;
+    await _db.markAllNotificationsRead(uid);
+  }
+
+  Future<void> _dismissNotification(_NotificationItem item) async {
+    final uid = _uid;
+    if (uid == null) return;
+    await _db.deleteNotification(uid, item.docId);
+    if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('"${item.title}" dismissed'),
         backgroundColor: Colors.deepPurple,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        action: SnackBarAction(
-          label: 'Undo',
-          textColor: Colors.white,
-          onPressed: () {
-            setState(() {
-              _notifications.insert(
-                _notifications.length > index ? index : _notifications.length,
-                item,
-              );
-            });
-          },
-        ),
       ),
     );
   }
@@ -140,112 +78,141 @@ class _NotificationsPageState extends State<NotificationsPage> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final filtered = _filteredNotifications;
+    final uid = _uid;
 
-    return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, size: 20),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text(
-          'Notifications',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-        ),
-        centerTitle: true,
-        actions: [
-          if (_unreadCount > 0)
-            TextButton(
-              onPressed: _markAllRead,
-              child: const Text(
-                'Read all',
-                style: TextStyle(
-                  color: Colors.deepPurple,
-                  fontWeight: FontWeight.w600,
-                  fontSize: 13,
-                ),
-              ),
+    return StreamBuilder<QuerySnapshot>(
+      stream: uid != null
+          ? _db.getNotificationsStream(uid)
+          : const Stream.empty(),
+      builder: (context, snapshot) {
+        final allItems = snapshot.hasData
+            ? _mapDocs(snapshot.data!.docs)
+            : <_NotificationItem>[];
+        final filtered = _selectedFilter == _NotifCategory.all
+            ? allItems
+            : allItems.where((n) => n.category == _selectedFilter).toList();
+        final unreadCount = allItems.where((n) => n.isUnread).length;
+
+        return Scaffold(
+          appBar: AppBar(
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back_ios_new, size: 20),
+              onPressed: () => Navigator.pop(context),
             ),
-        ],
-      ),
-      body: Column(
-        children: [
-          SizedBox(
-            height: 50,
-            child: ListView(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              children: _NotifCategory.values.map((cat) {
-                final isSelected = _selectedFilter == cat;
-                return Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child: FilterChip(
-                    label: Text(cat.label),
-                    selected: isSelected,
-                    onSelected: (_) => setState(() => _selectedFilter = cat),
-                    selectedColor: Colors.deepPurple.withValues(alpha: 0.15),
-                    checkmarkColor: Colors.deepPurple,
-                    labelStyle: TextStyle(
+            title: const Text(
+              'Notifications',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+            ),
+            centerTitle: true,
+            actions: [
+              if (unreadCount > 0)
+                TextButton(
+                  onPressed: _markAllRead,
+                  child: const Text(
+                    'Read all',
+                    style: TextStyle(
+                      color: Colors.deepPurple,
+                      fontWeight: FontWeight.w600,
                       fontSize: 13,
-                      fontWeight: isSelected
-                          ? FontWeight.w600
-                          : FontWeight.w400,
-                      color: isSelected
-                          ? Colors.deepPurple
-                          : (isDark ? Colors.white70 : Colors.black54),
                     ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
-                      side: BorderSide(
-                        color: isSelected
-                            ? Colors.deepPurple
-                            : Colors.grey.shade300,
+                  ),
+                ),
+            ],
+          ),
+          body: uid == null
+              ? const Center(
+                  child: Text('Please sign in to view notifications.'),
+                )
+              : snapshot.connectionState == ConnectionState.waiting
+              ? const Center(child: CircularProgressIndicator())
+              : Column(
+                  children: [
+                    SizedBox(
+                      height: 50,
+                      child: ListView(
+                        scrollDirection: Axis.horizontal,
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        children: _NotifCategory.values.map((cat) {
+                          final isSelected = _selectedFilter == cat;
+                          return Padding(
+                            padding: const EdgeInsets.only(right: 8),
+                            child: FilterChip(
+                              label: Text(cat.label),
+                              selected: isSelected,
+                              onSelected: (_) =>
+                                  setState(() => _selectedFilter = cat),
+                              selectedColor: Colors.deepPurple.withValues(
+                                alpha: 0.15,
+                              ),
+                              checkmarkColor: Colors.deepPurple,
+                              labelStyle: TextStyle(
+                                fontSize: 13,
+                                fontWeight: isSelected
+                                    ? FontWeight.w600
+                                    : FontWeight.w400,
+                                color: isSelected
+                                    ? Colors.deepPurple
+                                    : (isDark
+                                          ? Colors.white70
+                                          : Colors.black54),
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20),
+                                side: BorderSide(
+                                  color: isSelected
+                                      ? Colors.deepPurple
+                                      : Colors.grey.shade300,
+                                ),
+                              ),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 4,
+                              ),
+                            ),
+                          );
+                        }).toList(),
                       ),
                     ),
-                    padding: const EdgeInsets.symmetric(horizontal: 4),
-                  ),
-                );
-              }).toList(),
-            ),
-          ),
-
-          const SizedBox(height: 6),
-
-          Expanded(
-            child: filtered.isEmpty
-                ? _buildEmptyState(isDark)
-                : ListView.builder(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 4,
+                    const SizedBox(height: 6),
+                    Expanded(
+                      child: filtered.isEmpty
+                          ? _buildEmptyState(isDark)
+                          : ListView.builder(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 4,
+                              ),
+                              itemCount: filtered.length,
+                              itemBuilder: (context, index) {
+                                final notif = filtered[index];
+                                return Dismissible(
+                                  key: ValueKey(notif.docId),
+                                  direction: DismissDirection.endToStart,
+                                  onDismissed: (_) =>
+                                      _dismissNotification(notif),
+                                  background: Container(
+                                    alignment: Alignment.centerRight,
+                                    padding: const EdgeInsets.only(right: 24),
+                                    margin: const EdgeInsets.only(bottom: 10),
+                                    decoration: BoxDecoration(
+                                      color: Colors.redAccent.withValues(
+                                        alpha: 0.15,
+                                      ),
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                    child: const Icon(
+                                      Icons.delete_outline,
+                                      color: Colors.redAccent,
+                                    ),
+                                  ),
+                                  child: _buildNotificationTile(notif, isDark),
+                                );
+                              },
+                            ),
                     ),
-                    itemCount: filtered.length,
-                    itemBuilder: (context, index) {
-                      final notif = filtered[index];
-                      return Dismissible(
-                        key: ValueKey(notif.hashCode),
-                        direction: DismissDirection.endToStart,
-                        onDismissed: (_) => _dismissNotification(index),
-                        background: Container(
-                          alignment: Alignment.centerRight,
-                          padding: const EdgeInsets.only(right: 24),
-                          margin: const EdgeInsets.only(bottom: 10),
-                          decoration: BoxDecoration(
-                            color: Colors.redAccent.withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: const Icon(
-                            Icons.delete_outline,
-                            color: Colors.redAccent,
-                          ),
-                        ),
-                        child: _buildNotificationTile(notif, isDark),
-                      );
-                    },
-                  ),
-          ),
-        ],
-      ),
+                  ],
+                ),
+        );
+      },
     );
   }
 
@@ -376,15 +343,17 @@ enum _NotifCategory {
 }
 
 class _NotificationItem {
+  final String docId;
   final IconData icon;
   final Color color;
   final String title;
   final String message;
   final String time;
-  bool isUnread;
+  final bool isUnread;
   final _NotifCategory category;
 
-  _NotificationItem({
+  const _NotificationItem({
+    required this.docId,
     required this.icon,
     required this.color,
     required this.title,
