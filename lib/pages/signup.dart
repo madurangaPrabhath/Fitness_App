@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:fitness_app/pages/signin.dart';
 import 'package:fitness_app/pages/landing_page.dart';
 import 'package:fitness_app/pages/bottomnav.dart';
@@ -26,6 +27,7 @@ class _SignUpPageState extends State<SignUpPage> {
   final _auth = FirebaseAuth.instance;
   final _db = DatabaseMethods();
   final _prefs = SharedPreferenceMethods();
+  final _googleSignIn = GoogleSignIn();
 
   Future<void> _signUp() async {
     if (!_formKey.currentState!.validate()) return;
@@ -94,6 +96,91 @@ class _SignUpPageState extends State<SignUpPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Something went wrong: ${e.toString()}'),
+            backgroundColor: Colors.redAccent,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _signInWithGoogle() async {
+    setState(() => _isLoading = true);
+    try {
+      final googleUser = await _googleSignIn.signIn();
+      if (googleUser == null) {
+        setState(() => _isLoading = false);
+        return;
+      }
+
+      final googleAuth = await googleUser.authentication;
+      final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      final userCredential = await _auth.signInWithCredential(credential);
+      final user = userCredential.user!;
+      final isNewUser = userCredential.additionalUserInfo?.isNewUser ?? false;
+
+      if (isNewUser) {
+        try {
+          final userInfo = {
+            'uid': user.uid,
+            'name': user.displayName ?? '',
+            'email': user.email ?? '',
+            'createdAt': DateTime.now().toIso8601String(),
+            'totalWorkouts': 0,
+            'totalCalories': 0,
+            'totalMinutes': 0,
+          };
+          await _db.addUser(user.uid, userInfo);
+        } catch (_) {}
+      }
+
+      try {
+        await _prefs.saveUserSession(
+          uid: user.uid,
+          name: user.displayName ?? '',
+          email: user.email ?? '',
+        );
+      } catch (_) {}
+
+      if (!mounted) return;
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const BottomNav()),
+      );
+    } on FirebaseAuthException catch (e) {
+      final msg = switch (e.code) {
+        'account-exists-with-different-credential' =>
+          'An account already exists with a different sign-in method.',
+        'network-request-failed' =>
+          'No internet connection. Check your network.',
+        _ => e.message ?? 'Google sign-in failed. Please try again.',
+      };
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(msg),
+            backgroundColor: Colors.redAccent,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Google sign-in failed: ${e.toString()}'),
             backgroundColor: Colors.redAccent,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
@@ -368,6 +455,7 @@ class _SignUpPageState extends State<SignUpPage> {
                             icon: Icons.g_mobiledata,
                             label: 'Google',
                             isDark: isDark,
+                            onPressed: _isLoading ? null : _signInWithGoogle,
                           ),
                         ),
                         const SizedBox(width: 12),
@@ -476,9 +564,10 @@ class _SignUpPageState extends State<SignUpPage> {
     required IconData icon,
     required String label,
     required bool isDark,
+    VoidCallback? onPressed,
   }) {
     return OutlinedButton.icon(
-      onPressed: () {},
+      onPressed: onPressed,
       icon: Icon(icon, size: 22),
       label: Text(label),
       style: OutlinedButton.styleFrom(
