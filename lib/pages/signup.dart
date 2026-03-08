@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:fitness_app/pages/signin.dart';
@@ -27,7 +28,7 @@ class _SignUpPageState extends State<SignUpPage> {
   final _auth = FirebaseAuth.instance;
   final _db = DatabaseMethods();
   final _prefs = SharedPreferenceMethods();
-  final _googleSignIn = GoogleSignIn();
+  final _googleSignIn = GoogleSignIn(scopes: ['email', 'profile']);
 
   Future<void> _signUp() async {
     if (!_formKey.currentState!.validate()) return;
@@ -112,6 +113,8 @@ class _SignUpPageState extends State<SignUpPage> {
   Future<void> _signInWithGoogle() async {
     setState(() => _isLoading = true);
     try {
+      await _googleSignIn.signOut();
+
       final googleUser = await _googleSignIn.signIn();
       if (googleUser == null) {
         setState(() => _isLoading = false);
@@ -119,9 +122,16 @@ class _SignUpPageState extends State<SignUpPage> {
       }
 
       final googleAuth = await googleUser.authentication;
+
+      final idToken = googleAuth.idToken;
+      final accessToken = googleAuth.accessToken;
+      if (idToken == null) {
+        throw Exception('Google sign-in failed: could not obtain ID token.');
+      }
+
       final credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
-        idToken: googleAuth.idToken,
+        accessToken: accessToken,
+        idToken: idToken,
       );
 
       final userCredential = await _auth.signInWithCredential(credential);
@@ -164,34 +174,32 @@ class _SignUpPageState extends State<SignUpPage> {
           'No internet connection. Check your network.',
         _ => e.message ?? 'Google sign-in failed. Please try again.',
       };
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(msg),
-            backgroundColor: Colors.redAccent,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-          ),
-        );
-      }
+      if (mounted) _showError(msg);
+    } on PlatformException catch (e) {
+      final msg = switch (e.code) {
+        'sign_in_cancelled' => 'Google sign-in was cancelled.',
+        'network_error' => 'No internet connection. Check your network.',
+        'sign_in_failed' =>
+          'Google sign-in failed. Ensure SHA fingerprints are added in Firebase console.',
+        _ => e.message ?? 'Google sign-in failed. Please try again.',
+      };
+      if (mounted) _showError(msg);
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Google sign-in failed: ${e.toString()}'),
-            backgroundColor: Colors.redAccent,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-          ),
-        );
-      }
+      if (mounted) _showError(e.toString());
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
+  }
+
+  void _showError(String msg) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(msg),
+        backgroundColor: Colors.redAccent,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+    );
   }
 
   @override
