@@ -25,6 +25,8 @@ class SharedPreferenceMethods {
   static const String _keyProfileVisible = 'profileVisible';
   static const String _keyShowActivity = 'showActivity';
 
+  static const String _keyPhotoPath = 'photoPath';
+
   static const String _keyWeightUnit = 'weightUnit';
   static const String _keyHeightUnit = 'heightUnit';
   static const String _keyDistanceUnit = 'distanceUnit';
@@ -218,5 +220,17 @@ class SharedPreferenceMethods {
   Future<void> clearAll() async {
     final prefs = await _prefs;
     await prefs.clear();
+  }
+
+  Future<String?> getPhotoPath() async =>
+      (await _prefs).getString(_keyPhotoPath);
+
+  Future<void> setPhotoPath(String? path) async {
+    final prefs = await _prefs;
+    if (path == null || path.isEmpty) {
+      await prefs.remove(_keyPhotoPath);
+    } else {
+      await prefs.setString(_keyPhotoPath, path);
+    }
   }
 }

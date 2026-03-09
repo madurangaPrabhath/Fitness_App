@@ -1,5 +1,8 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:fitness_app/services/database.dart';
 import 'package:fitness_app/services/shared_pref.dart';
 
@@ -26,6 +29,9 @@ class _EditProfilePageState extends State<EditProfilePage> {
   bool _isLoading = true;
   bool _isSaving = false;
   String? _uid;
+
+  File? _imageFile;
+  bool _photoRemoved = false;
 
   final _db = DatabaseMethods();
   final _prefs = SharedPreferenceMethods();
@@ -98,9 +104,19 @@ class _EditProfilePageState extends State<EditProfilePage> {
               _weightKg = (data['weightKg'] as num?)?.toDouble() ?? weight;
             });
           }
-        } catch (_) {
-        }
+        } catch (_) {}
       }
+
+      // Load saved profile photo
+      try {
+        final photoPath = await _prefs.getPhotoPath();
+        if (photoPath != null && photoPath.isNotEmpty) {
+          final file = File(photoPath);
+          if (await file.exists() && mounted) {
+            setState(() => _imageFile = file);
+          }
+        }
+      } catch (_) {}
     } catch (_) {
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -186,6 +202,38 @@ class _EditProfilePageState extends State<EditProfilePage> {
         weightKg: _weightKg,
       );
 
+      // Handle profile photo
+      if (_photoRemoved) {
+        final oldPath = await _prefs.getPhotoPath();
+        if (oldPath != null && oldPath.isNotEmpty) {
+          try {
+            await File(oldPath).delete();
+          } catch (_) {}
+        }
+        await _prefs.setPhotoPath(null);
+        if (uid != null) {
+          try {
+            await _db.updateUser(uid, {'photoPath': ''});
+          } catch (_) {}
+        }
+      } else if (_imageFile != null) {
+        final dir = await getApplicationDocumentsDirectory();
+        final destPath = '${dir.path}/profile_photo_${uid ?? 'user'}.jpg';
+        File savedFile;
+        if (_imageFile!.path != destPath) {
+          savedFile = await _imageFile!.copy(destPath);
+        } else {
+          savedFile = _imageFile!;
+        }
+        await _prefs.setPhotoPath(savedFile.path);
+        if (uid != null) {
+          try {
+            await _db.updateUser(uid, {'photoPath': savedFile.path});
+          } catch (_) {}
+        }
+        if (mounted) setState(() => _imageFile = savedFile);
+      }
+
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -263,11 +311,16 @@ class _EditProfilePageState extends State<EditProfilePage> {
                       backgroundColor: Colors.deepPurple.withValues(
                         alpha: 0.15,
                       ),
-                      child: const Icon(
-                        Icons.person,
-                        size: 55,
-                        color: Colors.deepPurple,
-                      ),
+                      backgroundImage: _imageFile != null
+                          ? FileImage(_imageFile!)
+                          : null,
+                      child: _imageFile == null
+                          ? const Icon(
+                              Icons.person,
+                              size: 55,
+                              color: Colors.deepPurple,
+                            )
+                          : null,
                     ),
                     Positioned(
                       bottom: 0,
@@ -718,20 +771,20 @@ class _EditProfilePageState extends State<EditProfilePage> {
                 _imagePickerOption(
                   icon: Icons.camera_alt_outlined,
                   label: 'Take Photo',
-                  onTap: () => Navigator.pop(ctx),
+                  onTap: _pickImageFromCamera,
                 ),
                 const SizedBox(height: 10),
                 _imagePickerOption(
                   icon: Icons.photo_library_outlined,
                   label: 'Choose from Gallery',
-                  onTap: () => Navigator.pop(ctx),
+                  onTap: _pickImageFromGallery,
                 ),
                 const SizedBox(height: 10),
                 _imagePickerOption(
                   icon: Icons.delete_outline,
                   label: 'Remove Photo',
                   color: Colors.redAccent,
-                  onTap: () => Navigator.pop(ctx),
+                  onTap: _removePhoto,
                 ),
               ],
             ),
@@ -761,5 +814,43 @@ class _EditProfilePageState extends State<EditProfilePage> {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       tileColor: color.withValues(alpha: 0.06),
     );
+  }
+
+  Future<void> _pickImageFromCamera() async {
+    Navigator.pop(context);
+    final picker = ImagePicker();
+    final picked = await picker.pickImage(
+      source: ImageSource.camera,
+      imageQuality: 80,
+    );
+    if (picked != null && mounted) {
+      setState(() {
+        _imageFile = File(picked.path);
+        _photoRemoved = false;
+      });
+    }
+  }
+
+  Future<void> _pickImageFromGallery() async {
+    Navigator.pop(context);
+    final picker = ImagePicker();
+    final picked = await picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 80,
+    );
+    if (picked != null && mounted) {
+      setState(() {
+        _imageFile = File(picked.path);
+        _photoRemoved = false;
+      });
+    }
+  }
+
+  void _removePhoto() {
+    Navigator.pop(context);
+    setState(() {
+      _imageFile = null;
+      _photoRemoved = true;
+    });
   }
 }

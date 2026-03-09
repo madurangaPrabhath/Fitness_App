@@ -15,7 +15,7 @@ class DatabaseMethods {
   }
 
   Future<void> updateUser(String uid, Map<String, dynamic> updates) async {
-    await _users.doc(uid).update(updates);
+    await _users.doc(uid).set(updates, SetOptions(merge: true));
   }
 
   Future<void> deleteUser(String uid) async {
