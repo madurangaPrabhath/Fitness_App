@@ -514,17 +514,330 @@ class _SettingsPageState extends State<SettingsPage> {
       _showSnackBar('Please sign in to change your password');
       return;
     }
-    final email = user.email;
-    if (email == null) {
-      _showSnackBar('No email associated with this account');
+    if (user.email == null) {
+      _showSnackBar(
+        'Password change is not available for social sign-in accounts',
+      );
       return;
     }
-    try {
-      await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
-      _showSnackBar('Password reset email sent to $email');
-    } on FirebaseAuthException catch (e) {
-      _showSnackBar(e.message ?? 'Failed to send password reset email');
-    }
+
+    final currentCtrl = TextEditingController();
+    final newCtrl = TextEditingController();
+    final confirmCtrl = TextEditingController();
+    bool obscureCurrent = true;
+    bool obscureNew = true;
+    bool obscureConfirm = true;
+    bool isSaving = false;
+    final formKey = GlobalKey<FormState>();
+
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (ctx, setSheetState) {
+            final isDark = Theme.of(ctx).brightness == Brightness.dark;
+            return Padding(
+              padding: EdgeInsets.only(
+                left: 24,
+                right: 24,
+                top: 24,
+                bottom: MediaQuery.of(ctx).viewInsets.bottom + 24,
+              ),
+              child: SingleChildScrollView(
+                physics: const ClampingScrollPhysics(),
+                child: Form(
+                  key: formKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Center(
+                        child: Container(
+                          width: 40,
+                          height: 4,
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade400,
+                            borderRadius: BorderRadius.circular(2),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      const Text(
+                        'Change Password',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+
+                      TextFormField(
+                        controller: currentCtrl,
+                        obscureText: obscureCurrent,
+                        decoration: InputDecoration(
+                          labelText: 'Current Password',
+                          prefixIcon: const Icon(
+                            Icons.lock_outline,
+                            color: Colors.deepPurple,
+                          ),
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              obscureCurrent
+                                  ? Icons.visibility_off_outlined
+                                  : Icons.visibility_outlined,
+                              color: Colors.grey,
+                            ),
+                            onPressed: () => setSheetState(
+                              () => obscureCurrent = !obscureCurrent,
+                            ),
+                          ),
+                          filled: true,
+                          fillColor: isDark
+                              ? const Color(0xff2a2a3d)
+                              : Colors.grey.shade100,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: BorderSide.none,
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: const BorderSide(
+                              color: Colors.deepPurple,
+                              width: 1.5,
+                            ),
+                          ),
+                          errorBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: const BorderSide(
+                              color: Colors.redAccent,
+                              width: 1.5,
+                            ),
+                          ),
+                          focusedErrorBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: const BorderSide(
+                              color: Colors.redAccent,
+                              width: 1.5,
+                            ),
+                          ),
+                        ),
+                        validator: (v) => (v == null || v.isEmpty)
+                            ? 'Enter your current password'
+                            : null,
+                      ),
+                      const SizedBox(height: 14),
+
+                      TextFormField(
+                        controller: newCtrl,
+                        obscureText: obscureNew,
+                        decoration: InputDecoration(
+                          labelText: 'New Password',
+                          prefixIcon: const Icon(
+                            Icons.lock_reset_outlined,
+                            color: Colors.deepPurple,
+                          ),
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              obscureNew
+                                  ? Icons.visibility_off_outlined
+                                  : Icons.visibility_outlined,
+                              color: Colors.grey,
+                            ),
+                            onPressed: () =>
+                                setSheetState(() => obscureNew = !obscureNew),
+                          ),
+                          filled: true,
+                          fillColor: isDark
+                              ? const Color(0xff2a2a3d)
+                              : Colors.grey.shade100,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: BorderSide.none,
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: const BorderSide(
+                              color: Colors.deepPurple,
+                              width: 1.5,
+                            ),
+                          ),
+                          errorBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: const BorderSide(
+                              color: Colors.redAccent,
+                              width: 1.5,
+                            ),
+                          ),
+                          focusedErrorBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: const BorderSide(
+                              color: Colors.redAccent,
+                              width: 1.5,
+                            ),
+                          ),
+                        ),
+                        validator: (v) {
+                          if (v == null || v.isEmpty) {
+                            return 'Enter a new password';
+                          }
+                          if (v.length < 6) {
+                            return 'At least 6 characters';
+                          }
+                          if (v == currentCtrl.text) {
+                            return 'New password must differ from current';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 14),
+
+                      TextFormField(
+                        controller: confirmCtrl,
+                        obscureText: obscureConfirm,
+                        decoration: InputDecoration(
+                          labelText: 'Re-enter New Password',
+                          prefixIcon: const Icon(
+                            Icons.lock_outline,
+                            color: Colors.deepPurple,
+                          ),
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              obscureConfirm
+                                  ? Icons.visibility_off_outlined
+                                  : Icons.visibility_outlined,
+                              color: Colors.grey,
+                            ),
+                            onPressed: () => setSheetState(
+                              () => obscureConfirm = !obscureConfirm,
+                            ),
+                          ),
+                          filled: true,
+                          fillColor: isDark
+                              ? const Color(0xff2a2a3d)
+                              : Colors.grey.shade100,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: BorderSide.none,
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: const BorderSide(
+                              color: Colors.deepPurple,
+                              width: 1.5,
+                            ),
+                          ),
+                          errorBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: const BorderSide(
+                              color: Colors.redAccent,
+                              width: 1.5,
+                            ),
+                          ),
+                          focusedErrorBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: const BorderSide(
+                              color: Colors.redAccent,
+                              width: 1.5,
+                            ),
+                          ),
+                        ),
+                        validator: (v) {
+                          if (v == null || v.isEmpty) {
+                            return 'Please re-enter your new password';
+                          }
+                          if (v != newCtrl.text) {
+                            return 'Passwords do not match';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 24),
+
+                      SizedBox(
+                        width: double.infinity,
+                        height: 52,
+                        child: ElevatedButton(
+                          onPressed: isSaving
+                              ? null
+                              : () async {
+                                  if (!formKey.currentState!.validate()) return;
+                                  setSheetState(() => isSaving = true);
+                                  try {
+                                    final credential =
+                                        EmailAuthProvider.credential(
+                                          email: user.email!,
+                                          password: currentCtrl.text,
+                                        );
+                                    await user.reauthenticateWithCredential(
+                                      credential,
+                                    );
+                                    await user.updatePassword(newCtrl.text);
+                                    if (ctx.mounted) Navigator.pop(ctx);
+                                    _showSnackBar(
+                                      'Password updated successfully',
+                                    );
+                                  } on FirebaseAuthException catch (e) {
+                                    final msg = switch (e.code) {
+                                      'wrong-password' ||
+                                      'invalid-credential' =>
+                                        'Current password is incorrect.',
+                                      'weak-password' =>
+                                        'New password is too weak.',
+                                      'requires-recent-login' =>
+                                        'Please sign out and sign back in first.',
+                                      _ =>
+                                        e.message ??
+                                            'Failed to update password.',
+                                    };
+                                    setSheetState(() => isSaving = false);
+                                    _showSnackBar(msg);
+                                  }
+                                },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.deepPurple,
+                            foregroundColor: Colors.white,
+                            disabledBackgroundColor: Colors.deepPurple
+                                .withValues(alpha: 0.6),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            elevation: 2,
+                          ),
+                          child: isSaving
+                              ? const SizedBox(
+                                  width: 22,
+                                  height: 22,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2.5,
+                                  ),
+                                )
+                              : const Text(
+                                  'Update Password',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+
+    currentCtrl.dispose();
+    newCtrl.dispose();
+    confirmCtrl.dispose();
   }
 
   Future<void> _deleteAccount() async {
