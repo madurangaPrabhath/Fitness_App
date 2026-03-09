@@ -128,14 +128,33 @@ class _ProfilePageState extends State<ProfilePage> {
             final calories = data['totalCalories'] ?? 0;
             final minutes = data['totalMinutes'] ?? 0;
 
+            final bio = (data['bio'] as String?) ?? '';
+            final phone = (data['phone'] as String?) ?? '';
+            final heightCm = (data['heightCm'] as num?)?.toDouble();
+            final weightKg = (data['weightKg'] as num?)?.toDouble();
+            final dobStr = data['dob'] as String?;
+            int? age;
+            if (dobStr != null && dobStr.isNotEmpty) {
+              try {
+                final dob = DateTime.parse(dobStr);
+                final now = DateTime.now();
+                age = now.year - dob.year;
+                if (now.month < dob.month ||
+                    (now.month == dob.month && now.day < dob.day)) {
+                  age--;
+                }
+              } catch (_) {}
+            }
+
             return SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 30),
 
                   CircleAvatar(
-                    radius: 50,
+                    radius: 52,
                     backgroundColor: Colors.deepPurple.withValues(alpha: 0.15),
                     backgroundImage: photoUrl != null && photoUrl.isNotEmpty
                         ? NetworkImage(photoUrl)
@@ -143,13 +162,13 @@ class _ProfilePageState extends State<ProfilePage> {
                     child: photoUrl == null || photoUrl.isEmpty
                         ? const Icon(
                             Icons.person,
-                            size: 50,
+                            size: 52,
                             color: Colors.deepPurple,
                           )
                         : null,
                   ),
 
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 14),
 
                   Text(
                     name,
@@ -159,12 +178,60 @@ class _ProfilePageState extends State<ProfilePage> {
                     ),
                   ),
                   const SizedBox(height: 4),
+
                   Text(
                     email,
-                    style: const TextStyle(fontSize: 14, color: Colors.grey),
+                    style: const TextStyle(fontSize: 13, color: Colors.grey),
                   ),
 
-                  const SizedBox(height: 30),
+                  if (bio.isNotEmpty) ...[
+                    const SizedBox(height: 10),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Text(
+                        bio,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: Colors.grey.shade600,
+                          height: 1.4,
+                        ),
+                      ),
+                    ),
+                  ],
+
+                  if (age != null ||
+                      phone.isNotEmpty ||
+                      heightCm != null ||
+                      weightKg != null) ...[
+                    const SizedBox(height: 14),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      alignment: WrapAlignment.center,
+                      children: [
+                        if (age != null)
+                          _InfoChip(
+                            icon: Icons.cake_outlined,
+                            label: '$age yrs',
+                          ),
+                        if (phone.isNotEmpty)
+                          _InfoChip(icon: Icons.phone_outlined, label: phone),
+                        if (heightCm != null)
+                          _InfoChip(
+                            icon: Icons.height,
+                            label: '${heightCm.round()} cm',
+                          ),
+                        if (weightKg != null)
+                          _InfoChip(
+                            icon: Icons.monitor_weight_outlined,
+                            label: '${weightKg.round()} kg',
+                          ),
+                      ],
+                    ),
+                  ],
+
+                  const SizedBox(height: 24),
 
                   Row(
                     children: [
@@ -188,7 +255,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     ],
                   ),
 
-                  const SizedBox(height: 30),
+                  const SizedBox(height: 28),
 
                   GestureDetector(
                     onTap: () async {
@@ -369,6 +436,40 @@ class _StatTile extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           Text(label, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+        ],
+      ),
+    );
+  }
+}
+
+class _InfoChip extends StatelessWidget {
+  final IconData icon;
+  final String label;
+
+  const _InfoChip({required this.icon, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xff2a2a3d) : Colors.deepPurple.shade50,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 15, color: Colors.deepPurple),
+          const SizedBox(width: 5),
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+              color: Colors.deepPurple,
+            ),
+          ),
         ],
       ),
     );
