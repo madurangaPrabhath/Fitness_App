@@ -456,25 +456,14 @@ class _SignUpPageState extends State<SignUpPage> {
 
                     SizedBox(height: screenHeight * 0.016),
 
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _socialButton(
-                            icon: Icons.g_mobiledata,
-                            label: 'Google',
-                            isDark: isDark,
-                            onPressed: _isLoading ? null : _signInWithGoogle,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: _socialButton(
-                            icon: Icons.apple,
-                            label: 'Apple',
-                            isDark: isDark,
-                          ),
-                        ),
-                      ],
+                    SizedBox(
+                      width: double.infinity,
+                      child: _socialButton(
+                        icon: Icons.g_mobiledata,
+                        label: 'Google',
+                        isDark: isDark,
+                        onPressed: _isLoading ? null : _signInWithGoogle,
+                      ),
                     ),
 
                     SizedBox(height: screenHeight * 0.02),

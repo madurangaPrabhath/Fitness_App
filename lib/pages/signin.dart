@@ -502,33 +502,14 @@ class _SignInPageState extends State<SignInPage> {
 
                     const SizedBox(height: 18),
 
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _socialButton(
-                            icon: Icons.g_mobiledata,
-                            label: 'Google',
-                            isDark: isDark,
-                            onPressed: _isLoading ? null : _signInWithGoogle,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: _socialButton(
-                            icon: Icons.apple,
-                            label: 'Apple',
-                            isDark: isDark,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: _socialButton(
-                            icon: Icons.facebook,
-                            label: 'Facebook',
-                            isDark: isDark,
-                          ),
-                        ),
-                      ],
+                    SizedBox(
+                      width: double.infinity,
+                      child: _socialButton(
+                        icon: Icons.g_mobiledata,
+                        label: 'Google',
+                        isDark: isDark,
+                        onPressed: _isLoading ? null : _signInWithGoogle,
+                      ),
                     ),
 
                     const SizedBox(height: 28),
