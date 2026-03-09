@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -113,28 +114,36 @@ class _SignUpPageState extends State<SignUpPage> {
   Future<void> _signInWithGoogle() async {
     setState(() => _isLoading = true);
     try {
-      await _googleSignIn.signOut();
+      late UserCredential userCredential;
 
-      final googleUser = await _googleSignIn.signIn();
-      if (googleUser == null) {
-        setState(() => _isLoading = false);
-        return;
+      if (kIsWeb) {
+        final googleProvider = GoogleAuthProvider()
+          ..addScope('email')
+          ..addScope('profile');
+        userCredential = await _auth.signInWithPopup(googleProvider);
+      } else {
+        await _googleSignIn.signOut();
+
+        final googleUser = await _googleSignIn.signIn();
+        if (googleUser == null) {
+          setState(() => _isLoading = false);
+          return;
+        }
+
+        final googleAuth = await googleUser.authentication;
+        final idToken = googleAuth.idToken;
+        final accessToken = googleAuth.accessToken;
+        if (idToken == null) {
+          throw Exception('Google sign-in failed: could not obtain ID token.');
+        }
+
+        final credential = GoogleAuthProvider.credential(
+          accessToken: accessToken,
+          idToken: idToken,
+        );
+        userCredential = await _auth.signInWithCredential(credential);
       }
 
-      final googleAuth = await googleUser.authentication;
-
-      final idToken = googleAuth.idToken;
-      final accessToken = googleAuth.accessToken;
-      if (idToken == null) {
-        throw Exception('Google sign-in failed: could not obtain ID token.');
-      }
-
-      final credential = GoogleAuthProvider.credential(
-        accessToken: accessToken,
-        idToken: idToken,
-      );
-
-      final userCredential = await _auth.signInWithCredential(credential);
       final user = userCredential.user!;
       final isNewUser = userCredential.additionalUserInfo?.isNewUser ?? false;
 
