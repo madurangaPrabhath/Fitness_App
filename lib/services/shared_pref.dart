@@ -101,8 +101,6 @@ class SharedPreferenceMethods {
   Future<void> saveProfile({
     required String name,
     required String email,
-    required String phone,
-    required String bio,
     required String gender,
     required String dob,
     required double heightCm,
@@ -111,8 +109,6 @@ class SharedPreferenceMethods {
     final prefs = await _prefs;
     await prefs.setString(_keyName, name);
     await prefs.setString(_keyEmail, email);
-    await prefs.setString(_keyPhone, phone);
-    await prefs.setString(_keyBio, bio);
     await prefs.setString(_keyGender, gender);
     await prefs.setString(_keyDob, dob);
     await prefs.setDouble(_keyHeightCm, heightCm);

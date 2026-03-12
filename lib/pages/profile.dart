@@ -128,8 +128,6 @@ class _ProfilePageState extends State<ProfilePage> {
             final calories = data['totalCalories'] ?? 0;
             final minutes = data['totalMinutes'] ?? 0;
 
-            final bio = (data['bio'] as String?) ?? '';
-            final phone = (data['phone'] as String?) ?? '';
             final heightCm = (data['heightCm'] as num?)?.toDouble();
             final weightKg = (data['weightKg'] as num?)?.toDouble();
             final dobStr = data['dob'] as String?;
@@ -184,26 +182,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     style: const TextStyle(fontSize: 13, color: Colors.grey),
                   ),
 
-                  if (bio.isNotEmpty) ...[
-                    const SizedBox(height: 10),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: Text(
-                        bio,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: Colors.grey.shade600,
-                          height: 1.4,
-                        ),
-                      ),
-                    ),
-                  ],
-
-                  if (age != null ||
-                      phone.isNotEmpty ||
-                      heightCm != null ||
-                      weightKg != null) ...[
+                  if (age != null || heightCm != null || weightKg != null) ...[
                     const SizedBox(height: 14),
                     Wrap(
                       spacing: 8,
@@ -215,8 +194,6 @@ class _ProfilePageState extends State<ProfilePage> {
                             icon: Icons.cake_outlined,
                             label: '$age yrs',
                           ),
-                        if (phone.isNotEmpty)
-                          _InfoChip(icon: Icons.phone_outlined, label: phone),
                         if (heightCm != null)
                           _InfoChip(
                             icon: Icons.height,

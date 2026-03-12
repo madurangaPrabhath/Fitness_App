@@ -17,8 +17,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
-  final _phoneController = TextEditingController();
-  final _bioController = TextEditingController();
 
   String _selectedGender = 'Male';
   DateTime _selectedDate = DateTime(1995, 6, 15);
@@ -49,8 +47,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
 
       final name = await _prefs.getName() ?? '';
       final email = await _prefs.getEmail() ?? '';
-      final phone = await _prefs.getPhone() ?? '';
-      final bio = await _prefs.getBio() ?? '';
       final gender = await _prefs.getGender() ?? 'Male';
       final dobStr = await _prefs.getDob();
       final height = await _prefs.getHeightCm();
@@ -67,8 +63,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
         setState(() {
           _nameController.text = name;
           _emailController.text = email;
-          _phoneController.text = phone;
-          _bioController.text = bio;
           _selectedGender = ['Male', 'Female', 'Other'].contains(gender)
               ? gender
               : 'Male';
@@ -94,8 +88,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
             setState(() {
               _nameController.text = (data['name'] as String?) ?? name;
               _emailController.text = (data['email'] as String?) ?? email;
-              _phoneController.text = (data['phone'] as String?) ?? phone;
-              _bioController.text = (data['bio'] as String?) ?? bio;
               _selectedGender = ['Male', 'Female', 'Other'].contains(fsGender)
                   ? fsGender
                   : 'Male';
@@ -130,8 +122,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
     final uid = _uid ?? FirebaseAuth.instance.currentUser?.uid;
     final name = _nameController.text.trim();
     final email = _emailController.text.trim();
-    final phone = _phoneController.text.trim();
-    final bio = _bioController.text.trim();
     final dobStr = _selectedDate.toIso8601String();
 
     try {
@@ -182,8 +172,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
         await _db.updateUser(uid, {
           'name': name,
           'email': email,
-          'phone': phone,
-          'bio': bio,
           'gender': _selectedGender,
           'dob': dobStr,
           'heightCm': _heightCm,
@@ -194,8 +182,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
       await _prefs.saveProfile(
         name: name,
         email: email,
-        phone: phone,
-        bio: bio,
         gender: _selectedGender,
         dob: dobStr,
         heightCm: _heightCm,
@@ -267,8 +253,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
   void dispose() {
     _nameController.dispose();
     _emailController.dispose();
-    _phoneController.dispose();
-    _bioController.dispose();
     super.dispose();
   }
 
@@ -382,26 +366,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
                   }
                   return null;
                 },
-              ),
-
-              const SizedBox(height: 14),
-
-              _buildTextField(
-                controller: _phoneController,
-                label: 'Phone Number',
-                icon: Icons.phone_outlined,
-                isDark: isDark,
-                keyboardType: TextInputType.phone,
-              ),
-
-              const SizedBox(height: 14),
-
-              _buildTextField(
-                controller: _bioController,
-                label: 'Bio',
-                icon: Icons.edit_note_outlined,
-                isDark: isDark,
-                maxLines: 3,
               ),
 
               const SizedBox(height: 24),
