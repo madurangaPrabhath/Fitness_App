@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:fitness_app/services/database.dart';
 
 class ExerciseDetailPage extends StatefulWidget {
   final String name;
@@ -40,6 +42,9 @@ class _ExerciseDetailPageState extends State<ExerciseDetailPage>
 
   int _completedSets = 0;
   late int _reps;
+  bool _workoutSaved = false;
+
+  final _db = DatabaseMethods();
 
   static const Color _timerOrange = Color(0xFFFF6B35);
 
@@ -118,7 +123,142 @@ class _ExerciseDetailPageState extends State<ExerciseDetailPage>
 
   void _onTimerFinished() {
     setState(() => _completedSets++);
-    _showSetCompleteSnack();
+    if (_completedSets >= widget.sets) {
+      _onWorkoutComplete();
+    } else {
+      _showSetCompleteSnack();
+    }
+  }
+
+  Future<void> _onWorkoutComplete() async {
+    if (_workoutSaved) return;
+    _workoutSaved = true;
+
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    final totalMinutes = ((_totalSeconds * widget.sets) / 60).ceil().clamp(
+      1,
+      9999,
+    );
+    final calories = (_kcalForWorkout(
+      widget.name,
+      totalMinutes,
+    )).clamp(1, 9999);
+
+    if (uid != null) {
+      try {
+        await _db.incrementStats(
+          uid: uid,
+          calories: calories,
+          minutes: totalMinutes,
+        );
+        await _db.addWorkout(uid, {
+          'name': widget.name,
+          'sets': widget.sets,
+          'reps': _reps,
+          'durationSeconds': _totalSeconds * widget.sets,
+          'calories': calories,
+          'minutes': totalMinutes,
+        });
+      } catch (_) {}
+    }
+
+    if (!mounted) return;
+    _showWorkoutCompleteDialog();
+  }
+
+  /// Returns estimated calories burned for [name] given [minutes] of work.
+  /// Rates (kcal/min) are based on MET values for a ~70 kg person.
+  static int _kcalForWorkout(String name, int minutes) {
+    // kcal/min per exercise (MET × 70 kg × 1/60 hr)
+    const rates = <String, double>{
+      // Cardio
+      'Jump Rope': 12.0,
+      'Burpees': 10.0,
+      'High Knees': 9.0,
+      'Mountain Climbers': 9.0,
+      'Box Jumps': 9.5,
+      'Jumping Jacks': 8.0,
+      // Strength
+      'Squats': 6.5,
+      'Lunges': 6.0,
+      'Deadlifts': 7.0,
+      'Push-Ups': 7.0,
+      'Plank': 3.5,
+      'Bicep Curls': 4.5,
+      'Tricep Dips': 5.0,
+      'Shoulder Press': 5.5,
+      'Lateral Raises': 4.5,
+      'Hammer Curls': 4.5,
+      // Stretching
+      'Calf Stretch': 2.5,
+      'Cat-Cow Stretch': 2.5,
+      'Shoulder Stretch': 2.5,
+      'Chest Stretch': 2.5,
+      'Hamstring Stretch': 2.5,
+    };
+    final rate = rates[name] ?? 6.0; // default: moderate resistance
+    return (minutes * rate).round();
+  }
+
+  void _showWorkoutCompleteDialog() {
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        contentPadding: const EdgeInsets.fromLTRB(24, 28, 24, 16),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.deepPurple.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.emoji_events_rounded,
+                color: Colors.deepPurple,
+                size: 42,
+              ),
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'Workout Complete!',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Great job finishing ${widget.name}. Your stats have been updated.',
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 14, color: Colors.grey),
+            ),
+            const SizedBox(height: 24),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.deepPurple,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 13),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                ),
+                onPressed: () {
+                  Navigator.of(ctx).pop();
+                  Navigator.of(context).maybePop();
+                },
+                child: const Text(
+                  'Done',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   void _showSetCompleteSnack() {
