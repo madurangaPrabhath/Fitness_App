@@ -159,6 +159,17 @@ class _ExerciseDetailPageState extends State<ExerciseDetailPage>
           'calories': calories,
           'minutes': totalMinutes,
         });
+        await _db.addNotification(uid, {
+          'title': 'Workout Complete 💪',
+          'message':
+              'Great job! You finished ${widget.name} — '
+              '${widget.sets} sets, $_reps reps, '
+              '$totalMinutes min, $calories kcal burned.',
+          'category': 'workout',
+          'iconCodePoint': Icons.fitness_center.codePoint,
+          'colorValue': Colors.deepPurple.toARGB32(),
+          'isRead': false,
+        });
       } catch (_) {}
     }
 
