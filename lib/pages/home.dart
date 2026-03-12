@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -117,10 +119,8 @@ class _HomePageState extends State<HomePage> {
                           backgroundColor: Colors.deepPurple.withValues(
                             alpha: 0.15,
                           ),
-                          backgroundImage: validPhoto != null
-                              ? FileImage(validPhoto)
-                              : null,
-                          child: validPhoto == null
+                          backgroundImage: photoProvider,
+                          child: photoProvider == null
                               ? const Icon(
                                   Icons.person,
                                   color: Colors.deepPurple,

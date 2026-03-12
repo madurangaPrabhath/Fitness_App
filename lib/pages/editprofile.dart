@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:image_picker/image_picker.dart';
@@ -28,7 +30,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
   bool _isSaving = false;
   String? _uid;
 
-  File? _imageFile;
+  Uint8List? _imageBytes;
   bool _photoRemoved = false;
 
   final _db = DatabaseMethods();
@@ -101,11 +103,18 @@ class _EditProfilePageState extends State<EditProfilePage> {
 
       // Load saved profile photo
       try {
-        final photoPath = await _prefs.getPhotoPath();
-        if (photoPath != null && photoPath.isNotEmpty) {
-          final file = File(photoPath);
-          if (await file.exists() && mounted) {
-            setState(() => _imageFile = file);
+        if (kIsWeb) {
+          final photoData = await _prefs.getPhotoData();
+          if (photoData != null && photoData.isNotEmpty && mounted) {
+            setState(() => _imageBytes = base64Decode(photoData));
+          }
+        } else {
+          final photoPath = await _prefs.getPhotoPath();
+          if (photoPath != null && photoPath.isNotEmpty) {
+            final file = File(photoPath);
+            if (await file.exists() && mounted) {
+              setState(() => _imageBytes = file.readAsBytesSync());
+            }
           }
         }
       } catch (_) {}
@@ -188,36 +197,53 @@ class _EditProfilePageState extends State<EditProfilePage> {
         weightKg: _weightKg,
       );
 
-      // Handle profile photo
       if (_photoRemoved) {
-        final oldPath = await _prefs.getPhotoPath();
-        if (oldPath != null && oldPath.isNotEmpty) {
-          try {
-            await File(oldPath).delete();
-          } catch (_) {}
+        if (!kIsWeb) {
+          final oldPath = await _prefs.getPhotoPath();
+          if (oldPath != null && oldPath.isNotEmpty) {
+            try {
+              await File(oldPath).delete();
+            } catch (_) {}
+          }
+          await _prefs.setPhotoPath(null);
         }
-        await _prefs.setPhotoPath(null);
+        await _prefs.setPhotoData(null);
         if (uid != null) {
           try {
-            await _db.updateUser(uid, {'photoPath': ''});
+            await _db.updateUser(uid, {'photoPath': '', 'photoData': ''});
           } catch (_) {}
         }
-      } else if (_imageFile != null) {
-        final dir = await getApplicationDocumentsDirectory();
-        final destPath = '${dir.path}/profile_photo_${uid ?? 'user'}.jpg';
-        File savedFile;
-        if (_imageFile!.path != destPath) {
-          savedFile = await _imageFile!.copy(destPath);
+      } else if (_imageBytes != null) {
+        final base64Str = base64Encode(_imageBytes!);
+        await _prefs.setPhotoData(base64Str);
+        if (!kIsWeb) {
+          try {
+            final dir = await getApplicationDocumentsDirectory();
+            final destPath = '${dir.path}/profile_photo_${uid ?? 'user'}.jpg';
+            await File(destPath).writeAsBytes(_imageBytes!);
+            await _prefs.setPhotoPath(destPath);
+            if (uid != null) {
+              await _db.updateUser(uid, {
+                'photoPath': destPath,
+                'photoData': base64Str,
+              });
+            }
+          } catch (_) {
+            if (uid != null) {
+              await _db.updateUser(uid, {
+                'photoPath': '',
+                'photoData': base64Str,
+              });
+            }
+          }
         } else {
-          savedFile = _imageFile!;
+          if (uid != null) {
+            await _db.updateUser(uid, {
+              'photoPath': '',
+              'photoData': base64Str,
+            });
+          }
         }
-        await _prefs.setPhotoPath(savedFile.path);
-        if (uid != null) {
-          try {
-            await _db.updateUser(uid, {'photoPath': savedFile.path});
-          } catch (_) {}
-        }
-        if (mounted) setState(() => _imageFile = savedFile);
       }
 
       if (!mounted) return;
@@ -295,10 +321,10 @@ class _EditProfilePageState extends State<EditProfilePage> {
                       backgroundColor: Colors.deepPurple.withValues(
                         alpha: 0.15,
                       ),
-                      backgroundImage: _imageFile != null
-                          ? FileImage(_imageFile!)
+                      backgroundImage: _imageBytes != null
+                          ? MemoryImage(_imageBytes!)
                           : null,
-                      child: _imageFile == null
+                      child: _imageBytes == null
                           ? const Icon(
                               Icons.person,
                               size: 55,
@@ -785,11 +811,14 @@ class _EditProfilePageState extends State<EditProfilePage> {
     final picker = ImagePicker();
     final picked = await picker.pickImage(
       source: ImageSource.camera,
-      imageQuality: 80,
+      imageQuality: 70,
+      maxWidth: 512,
+      maxHeight: 512,
     );
     if (picked != null && mounted) {
+      final bytes = await picked.readAsBytes();
       setState(() {
-        _imageFile = File(picked.path);
+        _imageBytes = bytes;
         _photoRemoved = false;
       });
     }
@@ -800,11 +829,14 @@ class _EditProfilePageState extends State<EditProfilePage> {
     final picker = ImagePicker();
     final picked = await picker.pickImage(
       source: ImageSource.gallery,
-      imageQuality: 80,
+      imageQuality: 70,
+      maxWidth: 512,
+      maxHeight: 512,
     );
     if (picked != null && mounted) {
+      final bytes = await picked.readAsBytes();
       setState(() {
-        _imageFile = File(picked.path);
+        _imageBytes = bytes;
         _photoRemoved = false;
       });
     }
@@ -813,7 +845,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
   void _removePhoto() {
     Navigator.pop(context);
     setState(() {
-      _imageFile = null;
+      _imageBytes = null;
       _photoRemoved = true;
     });
   }

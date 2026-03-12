@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -123,7 +126,19 @@ class _ProfilePageState extends State<ProfilePage> {
             final email = (data['email'] as String?)?.isNotEmpty == true
                 ? data['email'] as String
                 : (FirebaseAuth.instance.currentUser?.email ?? '');
-            final photoUrl = data['photoUrl'] as String?;
+            ImageProvider? photoProvider;
+            final photoData = (data['photoData'] as String?) ?? '';
+            final photoPath = (data['photoPath'] as String?) ?? '';
+            if (photoData.isNotEmpty) {
+              try {
+                photoProvider = MemoryImage(base64Decode(photoData));
+              } catch (_) {}
+            } else if (!kIsWeb && photoPath.isNotEmpty) {
+              try {
+                final file = File(photoPath);
+                if (file.existsSync()) photoProvider = FileImage(file);
+              } catch (_) {}
+            }
             final workouts = data['totalWorkouts'] ?? 0;
             final calories = data['totalCalories'] ?? 0;
             final minutes = data['totalMinutes'] ?? 0;
@@ -154,10 +169,8 @@ class _ProfilePageState extends State<ProfilePage> {
                   CircleAvatar(
                     radius: 52,
                     backgroundColor: Colors.deepPurple.withValues(alpha: 0.15),
-                    backgroundImage: photoUrl != null && photoUrl.isNotEmpty
-                        ? NetworkImage(photoUrl)
-                        : null,
-                    child: photoUrl == null || photoUrl.isEmpty
+                    backgroundImage: photoProvider,
+                    child: photoProvider == null
                         ? const Icon(
                             Icons.person,
                             size: 52,
