@@ -75,13 +75,19 @@ class _HomePageState extends State<HomePage> {
             final calories = data['totalCalories'] ?? 0;
             final minutes = data['totalMinutes'] ?? 0;
 
-            final photoPath = data['photoPath'] as String?;
-            final photoFile = (photoPath != null && photoPath.isNotEmpty)
-                ? File(photoPath)
-                : null;
-            final validPhoto = (photoFile != null && photoFile.existsSync())
-                ? photoFile
-                : null;
+            ImageProvider? photoProvider;
+            final photoData = (data['photoData'] as String?) ?? '';
+            final photoPath = (data['photoPath'] as String?) ?? '';
+            if (photoData.isNotEmpty) {
+              try {
+                photoProvider = MemoryImage(base64Decode(photoData));
+              } catch (_) {}
+            } else if (!kIsWeb && photoPath.isNotEmpty) {
+              try {
+                final file = File(photoPath);
+                if (file.existsSync()) photoProvider = FileImage(file);
+              } catch (_) {}
+            }
 
             return Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
