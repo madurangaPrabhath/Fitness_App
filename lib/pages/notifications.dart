@@ -20,24 +20,62 @@ class _NotificationsPageState extends State<NotificationsPage> {
   List<_NotificationItem> _mapDocs(List<QueryDocumentSnapshot> docs) {
     return docs.map((doc) {
       final data = doc.data() as Map<String, dynamic>;
-      final category = _NotifCategory.values.firstWhere(
-        (c) => c.name == (data['category'] as String? ?? ''),
-        orElse: () => _NotifCategory.all,
-      );
+      final category = _parseCategory(data['category']);
       return _NotificationItem(
         docId: doc.id,
         icon: IconData(
-          data['iconCodePoint'] as int? ?? Icons.notifications.codePoint,
+          _asInt(data['iconCodePoint']) ?? Icons.notifications.codePoint,
           fontFamily: 'MaterialIcons',
         ),
-        color: Color(data['colorValue'] as int? ?? 0xFF7C4DFF),
+        color: Color(_asInt(data['colorValue']) ?? 0xFF7C4DFF),
         title: data['title'] as String? ?? '',
         message: data['message'] as String? ?? '',
-        time: _formatTime(data['createdAt'] as Timestamp?),
+        time: _formatTime(_toTimestamp(data['createdAt'])),
         isUnread: !(data['isRead'] as bool? ?? false),
         category: category,
       );
     }).toList();
+  }
+
+  int? _asInt(dynamic value) {
+    if (value is int) return value;
+    if (value is double) return value.toInt();
+    if (value is String) return int.tryParse(value);
+    return null;
+  }
+
+  Timestamp? _toTimestamp(dynamic value) {
+    if (value is Timestamp) return value;
+    if (value is DateTime) return Timestamp.fromDate(value);
+    if (value is int) {
+      return Timestamp.fromMillisecondsSinceEpoch(value);
+    }
+    if (value is String) {
+      final dt = DateTime.tryParse(value);
+      if (dt != null) return Timestamp.fromDate(dt);
+    }
+    return null;
+  }
+
+  _NotifCategory _parseCategory(dynamic raw) {
+    final value = (raw as String? ?? '').trim().toLowerCase();
+    switch (value) {
+      case 'workout':
+      case 'workouts':
+      case 'strength':
+      case 'cardio':
+        return _NotifCategory.workout;
+      case 'achievement':
+      case 'achievements':
+        return _NotifCategory.achievement;
+      case 'reminder':
+      case 'reminders':
+        return _NotifCategory.reminder;
+      case 'progress':
+        return _NotifCategory.progress;
+      default:
+        return _NotifCategory.all;
+    }
   }
 
   String _formatTime(Timestamp? ts) {
@@ -58,6 +96,13 @@ class _NotificationsPageState extends State<NotificationsPage> {
     final uid = _uid;
     if (uid == null) return;
     await _db.markAllNotificationsRead(uid);
+  }
+
+  Future<void> _markNotificationRead(_NotificationItem item) async {
+    if (!item.isUnread) return;
+    final uid = _uid;
+    if (uid == null) return;
+    await _db.markNotificationRead(uid, item.docId);
   }
 
   Future<void> _dismissNotification(_NotificationItem item) async {
@@ -85,6 +130,14 @@ class _NotificationsPageState extends State<NotificationsPage> {
           ? _db.getNotificationsStream(uid)
           : const Stream.empty(),
       builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return const Scaffold(
+            body: Center(
+              child: Text('Could not load notifications. Please try again.'),
+            ),
+          );
+        }
+
         final allItems = snapshot.hasData
             ? _mapDocs(snapshot.data!.docs)
             : <_NotificationItem>[];
@@ -217,86 +270,96 @@ class _NotificationsPageState extends State<NotificationsPage> {
   }
 
   Widget _buildNotificationTile(_NotificationItem notif, bool isDark) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: notif.isUnread
-            ? Colors.deepPurple.withValues(alpha: isDark ? 0.12 : 0.05)
-            : Theme.of(context).cardColor,
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
         borderRadius: BorderRadius.circular(16),
-        border: notif.isUnread
-            ? Border.all(
-                color: Colors.deepPurple.withValues(alpha: 0.25),
-                width: 1,
-              )
-            : null,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withValues(alpha: 0.08),
-            blurRadius: 8,
-            offset: const Offset(0, 3),
+        onTap: () => _markNotificationRead(notif),
+        child: Container(
+          margin: const EdgeInsets.only(bottom: 10),
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: notif.isUnread
+                ? Colors.deepPurple.withValues(alpha: isDark ? 0.12 : 0.05)
+                : Theme.of(context).cardColor,
+            borderRadius: BorderRadius.circular(16),
+            border: notif.isUnread
+                ? Border.all(
+                    color: Colors.deepPurple.withValues(alpha: 0.25),
+                    width: 1,
+                  )
+                : null,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.withValues(alpha: 0.08),
+                blurRadius: 8,
+                offset: const Offset(0, 3),
+              ),
+            ],
           ),
-        ],
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: notif.color.withValues(alpha: 0.15),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(notif.icon, color: notif.color, size: 22),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: notif.color.withValues(alpha: 0.15),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(notif.icon, color: notif.color, size: 22),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(
-                      child: Text(
-                        notif.title,
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: notif.isUnread
-                              ? FontWeight.bold
-                              : FontWeight.w500,
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            notif.title,
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: notif.isUnread
+                                  ? FontWeight.bold
+                                  : FontWeight.w500,
+                            ),
+                          ),
                         ),
+                        if (notif.isUnread)
+                          Container(
+                            width: 8,
+                            height: 8,
+                            decoration: const BoxDecoration(
+                              color: Colors.deepPurple,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      notif.message,
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: isDark ? Colors.white60 : Colors.grey.shade600,
+                        height: 1.3,
                       ),
                     ),
-                    if (notif.isUnread)
-                      Container(
-                        width: 8,
-                        height: 8,
-                        decoration: const BoxDecoration(
-                          color: Colors.deepPurple,
-                          shape: BoxShape.circle,
-                        ),
+                    const SizedBox(height: 6),
+                    Text(
+                      notif.time,
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Colors.grey.shade500,
                       ),
+                    ),
                   ],
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  notif.message,
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: isDark ? Colors.white60 : Colors.grey.shade600,
-                    height: 1.3,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  notif.time,
-                  style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
