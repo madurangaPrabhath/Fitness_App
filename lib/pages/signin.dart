@@ -27,7 +27,9 @@ class _SignInPageState extends State<SignInPage> {
   final _auth = FirebaseAuth.instance;
   final _db = DatabaseMethods();
   final _prefs = SharedPreferenceMethods();
-  final _googleSignIn = GoogleSignIn(scopes: ['email', 'profile']);
+  final GoogleSignIn? _googleSignIn = kIsWeb
+      ? null
+      : GoogleSignIn(scopes: ['email', 'profile']);
 
   @override
   void initState() {
@@ -145,9 +147,16 @@ class _SignInPageState extends State<SignInPage> {
           ..addScope('profile');
         userCredential = await _auth.signInWithPopup(googleProvider);
       } else {
-        await _googleSignIn.signOut();
+        final googleSignIn = _googleSignIn;
+        if (googleSignIn == null) {
+          throw Exception(
+            'Google Sign-In is not initialized for this platform.',
+          );
+        }
 
-        final googleUser = await _googleSignIn.signIn();
+        await googleSignIn.signOut();
+
+        final googleUser = await googleSignIn.signIn();
         if (googleUser == null) {
           setState(() => _isLoading = false);
           return;
