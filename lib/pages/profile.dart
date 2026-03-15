@@ -8,7 +8,6 @@ import 'package:fitness_app/services/database.dart';
 import 'package:fitness_app/services/shared_pref.dart';
 import 'package:fitness_app/pages/signin.dart';
 import 'package:fitness_app/pages/editprofile.dart';
-import 'package:fitness_app/pages/notifications.dart';
 import 'package:fitness_app/pages/settings.dart';
 import 'package:fitness_app/pages/helpsupport.dart';
 import 'package:fitness_app/pages/about.dart';
@@ -257,20 +256,6 @@ class _ProfilePageState extends State<ProfilePage> {
                       );
                     },
                     child: _buildOption(Icons.person_outline, 'Edit Profile'),
-                  ),
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const NotificationsPage(),
-                        ),
-                      );
-                    },
-                    child: _buildOption(
-                      Icons.notifications_outlined,
-                      'Notifications',
-                    ),
                   ),
                   GestureDetector(
                     onTap: () {
