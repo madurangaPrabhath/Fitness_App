@@ -84,23 +84,6 @@ class _HelpSupportPageState extends State<HelpSupportPage> {
         ),
       ],
     ),
-    _FaqCategory(
-      title: 'Notifications',
-      icon: Icons.notifications_outlined,
-      color: Color(0xFF2979FF),
-      faqs: [
-        _FaqItem(
-          question: 'How do I manage notifications?',
-          answer:
-              'Go to Profile → Settings → Notifications to toggle Workout Reminders, Goal Alerts, Hydration Reminders, and Weekly Reports on or off.',
-        ),
-        _FaqItem(
-          question: 'I\'m not receiving notifications',
-          answer:
-              'Make sure notifications are enabled both in the app settings and in your device\'s system settings for this app. Also check that Do Not Disturb mode is off.',
-        ),
-      ],
-    ),
   ];
 
   List<_FaqItem> get _filteredFaqs {

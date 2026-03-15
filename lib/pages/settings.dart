@@ -16,11 +16,6 @@ class _SettingsPageState extends State<SettingsPage> {
   final _sharedPref = SharedPreferenceMethods();
   final _db = DatabaseMethods();
 
-  bool _workoutReminders = true;
-  bool _goalAlerts = true;
-  bool _hydrationReminders = false;
-  bool _weeklyReport = true;
-
   bool _profileVisible = true;
   bool _showActivity = true;
 
@@ -40,10 +35,6 @@ class _SettingsPageState extends State<SettingsPage> {
 
   Future<void> _loadSettings() async {
     final boolResults = await Future.wait([
-      _sharedPref.getWorkoutReminders(),
-      _sharedPref.getGoalAlerts(),
-      _sharedPref.getHydrationReminders(),
-      _sharedPref.getWeeklyReport(),
       _sharedPref.getProfileVisible(),
       _sharedPref.getShowActivity(),
     ]);
@@ -55,12 +46,8 @@ class _SettingsPageState extends State<SettingsPage> {
     ]);
     if (!mounted) return;
     setState(() {
-      _workoutReminders = boolResults[0];
-      _goalAlerts = boolResults[1];
-      _hydrationReminders = boolResults[2];
-      _weeklyReport = boolResults[3];
-      _profileVisible = boolResults[4];
-      _showActivity = boolResults[5];
+      _profileVisible = boolResults[0];
+      _showActivity = boolResults[1];
       _weightUnit = stringResults[0];
       _heightUnit = stringResults[1];
       _distanceUnit = stringResults[2];
@@ -106,56 +93,6 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
 
             const SizedBox(height: 24),
-
-            _sectionHeader('Notifications'),
-            const SizedBox(height: 10),
-            _buildSwitchTile(
-              icon: Icons.fitness_center,
-              title: 'Workout Reminders',
-              subtitle: 'Get reminded before scheduled workouts',
-              value: _workoutReminders,
-              onChanged: (v) {
-                setState(() => _workoutReminders = v);
-                _sharedPref.setWorkoutReminders(v);
-              },
-              isDark: isDark,
-            ),
-            const SizedBox(height: 8),
-            _buildSwitchTile(
-              icon: Icons.emoji_events_outlined,
-              title: 'Goal Alerts',
-              subtitle: 'Notifications when you hit your targets',
-              value: _goalAlerts,
-              onChanged: (v) {
-                setState(() => _goalAlerts = v);
-                _sharedPref.setGoalAlerts(v);
-              },
-              isDark: isDark,
-            ),
-            const SizedBox(height: 8),
-            _buildSwitchTile(
-              icon: Icons.water_drop_outlined,
-              title: 'Hydration Reminders',
-              subtitle: 'Periodic reminders to drink water',
-              value: _hydrationReminders,
-              onChanged: (v) {
-                setState(() => _hydrationReminders = v);
-                _sharedPref.setHydrationReminders(v);
-              },
-              isDark: isDark,
-            ),
-            const SizedBox(height: 8),
-            _buildSwitchTile(
-              icon: Icons.bar_chart_outlined,
-              title: 'Weekly Report',
-              subtitle: 'Receive a summary of your weekly progress',
-              value: _weeklyReport,
-              onChanged: (v) {
-                setState(() => _weeklyReport = v);
-                _sharedPref.setWeeklyReport(v);
-              },
-              isDark: isDark,
-            ),
 
             const SizedBox(height: 24),
 
